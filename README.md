@@ -20,9 +20,9 @@ No se usa.
 
 ## Credits
 
--Lluís Cazorla
--Marc González
--Santiago Alvarez
+- Lluís Cazorla
+- Marc González
+- Santiago Alvarez
 
 ## License
 
