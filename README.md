@@ -22,7 +22,7 @@ No se usa.
 
 - Lluís Cazorla
 - Marc González
-- Santiago Alvarez
+- Santiago Álvarez
 
 ## License
 
