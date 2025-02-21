@@ -1,54 +1,158 @@
-/*
-Raylib example file.
-This is an example main file for a simple raylib project.
-Use this as a starting point or replace it with your code.
-
-by Jeffery Myers is marked with CC0 1.0. To view a copy of this license, visit https://creativecommons.org/publicdomain/zero/1.0/
-
-*/
-
 #include "raylib.h"
 
-#include "resource_dir.h"	// utility header for SearchAndSetResourceDir
+#define GRID_ROWS 30
+#define GRID_COLUMNS 12
+#define CELL_SIZE 40
 
-int main ()
-{
-	// Tell the window to use vsync and work on high DPI displays
-	SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI);
+#define MIN_X 20
+#define MAX_X 1600
+#define MIN_Y 20
+#define MAX_Y 800
 
-	// Create the window and OpenGL context
-	InitWindow(1280, 800, "Hello Raylib");
+static void DrawGrid(void);
+static void AddWalls(void);
+static bool checkCollisions1(void);
 
-	// Utility function from resource_dir.h to find the resources folder and set it as the current working directory so we can load from it
-	SearchAndSetResourceDir("resources");
+typedef struct Player {
+    Rectangle position;
+    Color color;
+} Player;
 
-	// Load a texture from the resources directory
-	Texture wabbit = LoadTexture("wabbit_alpha.png");
-	
-	// game loop
-	while (!WindowShouldClose())		// run the loop untill the user presses ESCAPE or presses the Close button on the window
-	{
-		// drawing
-		BeginDrawing();
+typedef struct Bomb {
+    Rectangle position;
+    bool isActive;
+    int timer;
+} Bomb;
 
-		// Setup the back buffer for drawing (clear color and depth buffers)
-		ClearBackground(BLACK);
+typedef struct WallCell {
+    Rectangle box;
+}Wall;
 
-		// draw some text using the default font
-		DrawText("Hello Raylib", 200,200,20,WHITE);
+void DrawPlayer(Player player) {
+    DrawRectangle(player.position.x, player.position.y, player.position.width, player.position.height, player.color);
+}
 
-		// draw our texture to the screen
-		DrawTexture(wabbit, 400, 200, WHITE);
-		
-		// end the frame and get ready for the next one  (display frame, poll input, etc...)
-		EndDrawing();
-	}
+void DrawBomb(Bomb bomb) {
+    if (bomb.isActive) {
+        DrawCircle(bomb.position.x, bomb.position.y, CELL_SIZE / 4, DARKGRAY);
+    }
+}
+Wall wallList[100];
+// Jugador
+Player player = { {400,400,30,40}, {0,121,241,255} };
+int counter = 0;
+int main(void) {
+    // Inicialización de la ventana
+    InitWindow(1920, 1080, "test");
+    SetTargetFPS(60);
 
-	// cleanup
-	// unload our texture so it can be cleaned up
-	UnloadTexture(wabbit);
 
-	// destroy the window and cleanup the OpenGL context
-	CloseWindow();
-	return 0;
+
+
+    // Bombas
+    Bomb bomb = { {0, 0}, false, 0 };
+
+    AddWalls();
+    while (!WindowShouldClose()) {
+
+        int tempx = player.position.x;
+        int tempy = player.position.y;
+        // Manejo de entrada
+
+        if (IsKeyDown(KEY_RIGHT)) {
+
+            player.position.x += 4;
+            if (checkCollisions1() == true || player.position.x >= MAX_X) {
+                player.position.x = tempx;
+            }
+        }
+        if (IsKeyDown(KEY_LEFT)) {
+            player.position.x -= 4;
+            if (checkCollisions1() == true || player.position.x <= MIN_X) {
+                player.position.x = tempx;
+            }
+        }
+        if (IsKeyDown(KEY_DOWN)) {
+            player.position.y += 4;
+            if (checkCollisions1() == true || player.position.y >= MAX_Y) {
+                player.position.y = tempy;
+            }
+        }
+        if (IsKeyDown(KEY_UP)) {
+            player.position.y -= 4;
+            if (checkCollisions1() == true || player.position.y <= MIN_Y) {
+                player.position.y = tempy;
+            }
+        }
+
+
+        
+        // Colocar bomba
+        if (IsKeyPressed(KEY_SPACE) && !bomb.isActive) {
+            bomb.position = player.position;
+            bomb.isActive = true;
+            bomb.timer = 60;  // Temporizador para la bomba (1 segundo)
+        }
+
+        // Actualizar bomba
+        if (bomb.isActive) {
+            bomb.timer--;
+            if (bomb.timer <= 0) {
+                bomb.isActive = false;
+            }
+        }
+
+
+
+        // Dibujo
+        BeginDrawing();
+        ClearBackground(BLACK);
+        //DrawRectangle(player.position.x, player.position.y, player.position.width, player.position.height, GREEN);
+        // Dibujar jugador y bomba
+        DrawPlayer(player);
+
+        DrawBomb(bomb);
+
+        DrawGrid();
+
+
+        EndDrawing();
+    }
+
+    // Cerrar ventana
+    CloseWindow();
+
+    return 0;
+}
+void DrawGrid() {
+    for (int i = 0; i < 100; i++) {
+        DrawRectangle(wallList[i].box.x, wallList[i].box.y, wallList[i].box.width, wallList[i].box.height, WHITE);
+    }
+
+}
+void AddWalls() {
+    counter = 0;
+    for (int i = 0; i < GRID_ROWS; i++) {
+        for (int j = 0; j < GRID_COLUMNS; j++) {
+            if (i != 0 && j != 0 && i != GRID_ROWS - 1 && j != GRID_COLUMNS - 1) {
+                if (i % 2 == 0 && j % 2 == 0) {
+
+                    wallList[counter].box.x = i * 50 + 150;
+                    wallList[counter].box.y = j * 50 + 150;
+                    wallList[counter].box.width = 50;
+                    wallList[counter].box.height = 50;
+                    counter++;
+                }
+            }
+        }
+    }
+}
+bool checkCollisions1() {
+    for (int i = 0; i < counter - 1; i++) {
+        if (CheckCollisionRecs(player.position, wallList[i].box) == true)
+        {
+            return true;
+        }
+    }
+    return false;
 }
