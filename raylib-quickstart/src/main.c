@@ -9,6 +9,10 @@
 
 #define MAX_BOMBS 10
 #define BOMB_TIMER 150
+#define BOMB_RADIUS 4
+
+#define SCALE 1
+
 
 static void DrawGrid(void);
 static void DrawBombs(void);
@@ -16,17 +20,26 @@ static void AddWalls(void);
 static void AddBomb(void);
 static void ExplodeBombs(void);
 static bool checkCollisions1(void);
+static bool OnBomb(void);
 
 typedef struct Player {
     Rectangle position;
     Color color;
 } Player;
 
+typedef struct Blast {
+    int radius;
+    int timer;
+} Blast;
+
 typedef struct Bomb {
     Rectangle position;
     bool isActive;
     int timer;
+    Blast blast;
 } Bomb;
+
+
 
 typedef struct WallCell {
     Rectangle box;
@@ -35,12 +48,13 @@ typedef struct WallCell {
 void DrawPlayer(Player player) {
     DrawRectangle(player.position.x, player.position.y, player.position.width, player.position.height, player.color);
 }
+bool onBomb = false;
 
 Wall wallList[120];
 Bomb bomblist[10];
 int bombGrid[10][30];
 // Jugador
-Player player = { {MARGIN_X + 55,MARGIN_Y + 55,30,40}, {0,121,241,255} };
+Player player = { {MARGIN_X + 55,MARGIN_Y + 55,30 * SCALE,40 * SCALE}, {0,121,241,255} };
 int counter = 0;
 int bombcounter = 0;
 int main(void) {
@@ -55,6 +69,7 @@ int main(void) {
 
         int tempx = player.position.x;
         int tempy = player.position.y;
+        onBomb = OnBomb();
         // Manejo de entrada
 
         if (IsKeyDown(KEY_RIGHT)) {
@@ -84,7 +99,7 @@ int main(void) {
         }
 
 
-        
+
         // Colocar bomba
         if (IsKeyPressed(KEY_SPACE)) {
             AddBomb();
@@ -99,20 +114,29 @@ int main(void) {
             if (bomblist[i].isActive) {
                 bomblist[i].timer--;
                 if (bomblist[i].timer <= 0) {
+
+
+                }
+            }
+            if (bomblist[i].blast.timer > 0 && bomblist[i].timer <= 0) {
+                bomblist[i].blast.timer--;
+                if (bomblist[i].blast.timer <= 0) {
+                    bomblist[i].position.x = -4;
+                    bomblist[i].position.y = -4;
                     bomblist[i].isActive = false;
                     bombcounter--;
                 }
             }
         }
-        
-        
+
+
 
 
 
         // Dibujo
         BeginDrawing();
         ClearBackground(BLACK);
-        
+
         // Dibujar jugador y bomba
         DrawPlayer(player);
 
@@ -136,11 +160,19 @@ void DrawGrid() {
 
 }
 void DrawBombs() {
-    for (int i = 0; i < MAX_BOMBS;i++) {
-        if (bomblist[i].isActive == true) {
+    for (int i = 0; i < MAX_BOMBS; i++) {
+        if (bomblist[i].timer > 0) {
             DrawCircle(bomblist[i].position.x, bomblist[i].position.y, CELL_SIZE / 2, DARKGRAY);
         }
-        
+        else if (bomblist[i].blast.timer > 0) {
+            for (int j = 0; j < BOMB_RADIUS; j++) {
+                DrawRectangle(bomblist[i].position.x + 25 + (50 * j), bomblist[i].position.y - 25, 50, 50, RED);//Derecha
+                DrawRectangle(bomblist[i].position.x - 75 - (50 * j), bomblist[i].position.y - 25, 50, 50, BLUE);//Izquierda
+                DrawRectangle(bomblist[i].position.x - 25, bomblist[i].position.y + 25 + (50 * j), 50, 50, GREEN);//Abajo
+                DrawRectangle(bomblist[i].position.x - 25, bomblist[i].position.y - 75 - (50 * j), 50, 50, YELLOW);//Arriba
+            }
+        }
+
     }
 }
 void AddWalls() {
@@ -150,18 +182,18 @@ void AddWalls() {
             if (i != 0 && j != 0 && i != GRID_ROWS - 1 && j != GRID_COLUMNS - 1) {
                 if (i % 2 == 0 && j % 2 == 0) {
 
-                    wallList[counter].box.x = i * 50 + MARGIN_X;
-                    wallList[counter].box.y = j * 50 + MARGIN_Y;
-                    wallList[counter].box.width = 50;
-                    wallList[counter].box.height = 50;
+                    wallList[counter].box.x = i * (50 * SCALE) + MARGIN_X;
+                    wallList[counter].box.y = j * (50 * SCALE) + MARGIN_Y;
+                    wallList[counter].box.width = 50 * SCALE;
+                    wallList[counter].box.height = 50 * SCALE;
                     counter++;
                 }
             }
             else {
-                wallList[counter].box.x = i * 50 + MARGIN_X;
-                wallList[counter].box.y = j * 50 + MARGIN_Y;
-                wallList[counter].box.width = 50;
-                wallList[counter].box.height = 50;
+                wallList[counter].box.x = i * (50 * SCALE) + MARGIN_X;
+                wallList[counter].box.y = j * (50 * SCALE) + MARGIN_Y;
+                wallList[counter].box.width = 50 * SCALE;
+                wallList[counter].box.height = 50 * SCALE;
                 counter++;
             }
         }
@@ -173,30 +205,48 @@ void AddBomb() {
             if (bomblist[i].isActive == false) {
 
                 bomblist[i].position.x = (((int)player.position.x / 50) * 50) + 35;
-                bomblist[i].position.y = (((int)player.position.y / 50) * 50) + 25;
+                bomblist[i].position.y = ((((int)player.position.y + 15) / 50) * 50) + 25;
                 bomblist[i].isActive = true;
                 bomblist[i].timer = BOMB_TIMER;
+                Blast b = { BOMB_RADIUS,BOMB_TIMER };
+                bomblist[i].blast = b;
                 printf("La operacion: %f entre %d es: %d", player.position.x, 50, ((int)player.position.x / 50) * 50);
                 printf("Pos x: %f\nPos y: %f\n", player.position.x, player.position.y);
                 return;
             }
         }
-        
+
         bombcounter++;
     }
     else {
-    //Añadir sonido o algo
+        //Añadir sonido o algo
     }
-    
+
 }
 void ExplodeBombs() {
-    
+
     bombcounter = 0;
 }
 bool checkCollisions1() {
     for (int i = 0; i < counter - 1; i++) {
         if (CheckCollisionRecs(player.position, wallList[i].box) == true)
         {
+            return true;
+        }
+    }
+    for (int i = 0; i < MAX_BOMBS; i++) {
+        Vector2 v = { bomblist[i].position.x, bomblist[i].position.y };
+        if (CheckCollisionCircleRec(v, CELL_SIZE / 2, player.position) && onBomb == false) {
+            return true;
+        }
+    }
+
+    return false;
+}
+bool OnBomb() {
+    for (int i = 0; i < MAX_BOMBS; i++) {
+        Vector2 v = { bomblist[i].position.x, bomblist[i].position.y };
+        if (CheckCollisionCircleRec(v, CELL_SIZE / 2, player.position)) {
             return true;
         }
     }
