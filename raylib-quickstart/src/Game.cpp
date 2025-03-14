@@ -10,11 +10,16 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
 }
 
 std::vector<Blast> blasts; // Definición de la variable global
+std::vector<Enemy> enemies;
+int enemyCounter = 0;
 Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
+Texture2D temp;
 Ballom enemy(enemyStartPos);
 
+
 void Game::Run() {
-    
+
+    temp = LoadTexture("resources/test.png");
     
     while (!WindowShouldClose()) {
         Update();
@@ -75,7 +80,7 @@ void Game::Update() {
     
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
-    if (IsKeyPressed(KEY_E)) ExplodeBombs();
+    if (IsKeyPressed(KEY_E)) AddEnemy();
 
     for (auto& blast : blasts) {
         blast.Update(GetFrameTime());
@@ -100,9 +105,8 @@ void Game::Update() {
             ++it; 
         }
     }
-    for (int i = 0; i < 100; ++i) { // Simulación de 100 frames
-        enemy.Update(GetFrameTime(), walls);
-        enemy.Draw();
+    for (auto& enemy : enemies) { 
+        enemy.Update(GetFrameTime(), walls, softBlocks);        
     }
 }
 
@@ -116,7 +120,11 @@ void Game::Draw() {
     for (auto& blast : blasts) {
         blast.Draw();
     }
+    for (auto& enemy : enemies) { 
+        enemy.Draw(); 
+    }
     player.Draw();
+    DrawText(TextFormat("Direccion: %d, %d", enemy.GetDirection().x, enemy.GetDirection().y), 100, 90, 40, WHITE);
     DrawText(TextFormat("Vidas: %d", player.GetLife()), 100, 50, 40, WHITE);
     DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
     DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 50, 40, WHITE);
@@ -207,6 +215,16 @@ bool Game::IsBlastBlocked(Vector2 position) {
     }
     return false;  // No Blockeado :D
 }
+
+void Game::AddEnemy() {
+
+    enemies.push_back(Ballom(enemyStartPos));
+    enemyCounter++;
+    enemies.at(enemyCounter - 1).SetTexture(temp);
+    
+
+}
+
 int Game::CheckCollisions(Rectangle rec) {
     for (const auto& wall : walls) {
         if (CheckCollisionRecs(rec, wall.GetBound())) return 1;

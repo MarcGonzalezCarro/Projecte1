@@ -26,6 +26,7 @@ public:
     void Draw();
     void AddWalls();
     void AddBomb();
+    void AddEnemy();
     void AddBlasts(Bomb bomb);
     void ExplodeBombs();
     void ResetStage();
