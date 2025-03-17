@@ -76,7 +76,15 @@ void Game::Update() {
             CAMERA_OFFSET_Y += 4;
         }
     }
-
+    Vector2 playerPos = {player.GetX(), player.GetY()};
+    if (CheckBlastDamage(playerPos)) {
+        if (player.GetLife() <= 0) {
+            GameOver();
+        }
+        else {
+            ResetStage();
+        }
+    }
     
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
@@ -105,9 +113,17 @@ void Game::Update() {
             ++it; 
         }
     }
-    for (auto& enemy : enemies) { 
-        enemy.Update(GetFrameTime(), walls, softBlocks);        
+    for (auto it = enemies.begin(); it != enemies.end(); ) {
+        if (CheckBlastDamage(it->GetPosition())) {
+            it = enemies.erase(it);
+            enemyCounter--;
+        }
+        else {
+            it->Update(GetFrameTime(), walls, softBlocks);
+            ++it; 
+        }
     }
+
 }
 
 void Game::Draw() {
@@ -232,17 +248,27 @@ int Game::CheckCollisions(Rectangle rec) {
     for (const auto& softBlock : softBlocks) {
         if (CheckCollisionRecs(rec, softBlock.GetBound())) return 2;
     }
-    for (const auto& bomb : bombs) {
-        if (CheckCollisionRecs(rec, bomb->GetBounds()) && !onBomb) return 3;
-    }
+    
     return 0;
 }
 
-
+bool Game::CheckBlastDamage(Vector2 pos) {
+    Rectangle rec = { pos.x, pos.y, CELL_SIZE - 20, CELL_SIZE - 20};
+    for (const auto& blast : blasts) {
+        Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE, CELL_SIZE};
+        if (CheckCollisionRecs(rec, r)) return true;
+    }
+    return false;
+}
 
 void Game::ResetStage() {
-    player.SetPosition(100, 100);
-    player.DecreaseLife();
+    blasts.clear();
     bombs.clear();
+    enemies.clear();
+    player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    player.DecreaseLife();
     AddWalls();
+}
+void Game::GameOver() {
+
 }

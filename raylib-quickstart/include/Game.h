@@ -32,6 +32,8 @@ public:
     void ResetStage();
     int CheckCollisions(Rectangle rec);
     bool IsBlastBlocked(Vector2 position);
+    bool CheckBlastDamage(Vector2 pos);
+    void GameOver();
 };
 
 extern std::vector<Blast> blasts;
