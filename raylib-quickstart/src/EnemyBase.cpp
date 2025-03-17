@@ -102,5 +102,7 @@ bool Enemy::CheckWallCollision(Vector2 Position, const std::vector<Wall>& walls,
     return false; // No hay colisión
 }
 
-
+void Enemy::SetSpeed(float temp) {
+    speed = temp;
+}
 

@@ -20,7 +20,7 @@ void Doria::DropBomb() {
 
 bool Doria::CheckWallCollision(Vector2 Position, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
     Rectangle enemyRec = { Position.x, Position.y, CELL_SIZE - 30, CELL_SIZE - 30 };
-    printf("GDFGDGDGGSGGSG");
+    
     for (const auto& wall : walls) {
         Rectangle wallRec = wall.GetBound();
         if (CheckCollisionRecs(enemyRec, wallRec)) {

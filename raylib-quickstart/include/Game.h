@@ -26,7 +26,7 @@ public:
     void Draw();
     void AddWalls();
     void AddBomb();
-    void AddEnemy();
+    void AddEnemy(Vector2 pos);
     void AddBlasts(Bomb bomb);
     void ExplodeBombs();
     void ResetStage();

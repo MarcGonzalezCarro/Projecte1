@@ -5,8 +5,13 @@
 #include "Ballom.h"
 #include "Doria.h"
 
+Texture2D temp;
+Texture2D temp2;
+
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     
+    temp = LoadTexture("resources/test.png");
+    temp2 = LoadTexture("resources/Doria01.png");
     AddWalls();
 }
 
@@ -14,15 +19,13 @@ std::vector<Blast> blasts; // Definición de la variable global
 std::vector<std::unique_ptr<Enemy>> enemies;
 int enemyCounter = 0;
 Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
-Texture2D temp;
-Texture2D temp2;
+
 Ballom enemy(enemyStartPos);
 
 
 void Game::Run() {
 
-    temp = LoadTexture("resources/test.png");
-    temp2 = LoadTexture("resources/Doria01.png");
+    
 
     while (!WindowShouldClose()) {
         Update();
@@ -79,7 +82,7 @@ void Game::Update() {
             CAMERA_OFFSET_Y += 4;
         }
     }
-    Vector2 playerPos = {player.GetX(), player.GetY()};
+    Vector2 playerPos = {player.GetX() + 20, player.GetY() + 20};
     if (CheckBlastDamage(playerPos)) {
         if (player.GetLife() <= 0) {
             GameOver();
@@ -91,7 +94,7 @@ void Game::Update() {
     
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
-    if (IsKeyPressed(KEY_E)) AddEnemy();
+    //if (IsKeyPressed(KEY_E)) AddEnemy();
 
     for (auto& blast : blasts) {
         blast.Update(GetFrameTime());
@@ -165,8 +168,14 @@ void Game::AddWalls() {
                 else if ((i <= 3 && j <= 3)) {
                     //Lugar SEguro
                 }
-                else if (GetRandomValue(1, 4) == 1) {
+                else{
+                    if (GetRandomValue(1, 4) == 1){
                     softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                        if (GetRandomValue(1, 4) == 1) {
+                            Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
+                            AddEnemy(v);
+                        }
+                    }
                 }
             }
             
@@ -236,15 +245,16 @@ bool Game::IsBlastBlocked(Vector2 position) {
     return false;  // No Blockeado :D
 }
 
-void Game::AddEnemy() {
+void Game::AddEnemy(Vector2 pos) {
     int ran = std::rand() % 2;
     if (ran == 0) {
-        enemies.push_back(std::make_unique<Ballom>(enemyStartPos)); // Crear y agregar Ballom
+        enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
         enemies.back()->SetTexture(temp);
     }
     else {
-        enemies.push_back(std::make_unique<Doria>(enemyStartPos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
         enemies.back()->SetTexture(temp2);
+        enemies.back()->SetSpeed(0.5f);
     }
     enemyCounter++;
 }
@@ -261,7 +271,7 @@ int Game::CheckCollisions(Rectangle rec) {
 }
 
 bool Game::CheckBlastDamage(Vector2 pos) {
-    Rectangle rec = { pos.x, pos.y, CELL_SIZE - 20, CELL_SIZE - 20};
+    Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE};
     for (const auto& blast : blasts) {
         Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE, CELL_SIZE};
         if (CheckCollisionRecs(rec, r)) return true;
@@ -274,6 +284,8 @@ void Game::ResetStage() {
     bombs.clear();
     enemies.clear();
     enemyCounter = 0;
+    CAMERA_OFFSET_X = 0;
+    CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     player.DecreaseLife();
     AddWalls();
