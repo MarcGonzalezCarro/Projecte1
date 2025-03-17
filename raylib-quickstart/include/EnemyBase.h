@@ -20,6 +20,7 @@ public:
 
     void SetRandomDirection();
     void SetTexture(Texture2D newTexture);
+    virtual bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks);
 
 protected:
     Vector2 position; // Posición del enemigo
@@ -28,7 +29,7 @@ protected:
     float framecounter;
     Texture2D texture;
     Vector2 direction;
-    bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks);
+    
 };
 
 #endif // ENEMY_H

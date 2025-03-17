@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Blast.h"
 #include "Ballom.h"
+#include "Doria.h"
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     
@@ -10,17 +11,19 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
 }
 
 std::vector<Blast> blasts; // Definición de la variable global
-std::vector<Enemy> enemies;
+std::vector<std::unique_ptr<Enemy>> enemies;
 int enemyCounter = 0;
 Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
 Texture2D temp;
+Texture2D temp2;
 Ballom enemy(enemyStartPos);
 
 
 void Game::Run() {
 
     temp = LoadTexture("resources/test.png");
-    
+    temp2 = LoadTexture("resources/Doria01.png");
+
     while (!WindowShouldClose()) {
         Update();
         Draw();
@@ -114,13 +117,13 @@ void Game::Update() {
         }
     }
     for (auto it = enemies.begin(); it != enemies.end(); ) {
-        if (CheckBlastDamage(it->GetPosition())) {
-            it = enemies.erase(it);
+        if (CheckBlastDamage((*it)->GetPosition())) {
+            it = enemies.erase(it); // std::unique_ptr se encarga de liberar la memoria
             enemyCounter--;
         }
         else {
-            it->Update(GetFrameTime(), walls, softBlocks);
-            ++it; 
+            (*it)->Update(GetFrameTime(), walls, softBlocks);
+            ++it;
         }
     }
 
@@ -136,9 +139,10 @@ void Game::Draw() {
     for (auto& blast : blasts) {
         blast.Draw();
     }
-    for (auto& enemy : enemies) { 
-        enemy.Draw(); 
+    for (const auto& enemy : enemies) {
+        enemy->Draw(); // Accede al objeto apuntado por unique_ptr
     }
+
     player.Draw();
     DrawText(TextFormat("Direccion: %d, %d", enemy.GetDirection().x, enemy.GetDirection().y), 100, 90, 40, WHITE);
     DrawText(TextFormat("Vidas: %d", player.GetLife()), 100, 50, 40, WHITE);
@@ -233,12 +237,16 @@ bool Game::IsBlastBlocked(Vector2 position) {
 }
 
 void Game::AddEnemy() {
-
-    enemies.push_back(Ballom(enemyStartPos));
+    int ran = std::rand() % 2;
+    if (ran == 0) {
+        enemies.push_back(std::make_unique<Ballom>(enemyStartPos)); // Crear y agregar Ballom
+        enemies.back()->SetTexture(temp);
+    }
+    else {
+        enemies.push_back(std::make_unique<Doria>(enemyStartPos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(temp2);
+    }
     enemyCounter++;
-    enemies.at(enemyCounter - 1).SetTexture(temp);
-    
-
 }
 
 int Game::CheckCollisions(Rectangle rec) {
@@ -265,6 +273,7 @@ void Game::ResetStage() {
     blasts.clear();
     bombs.clear();
     enemies.clear();
+    enemyCounter = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     player.DecreaseLife();
     AddWalls();

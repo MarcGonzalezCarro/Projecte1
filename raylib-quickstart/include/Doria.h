@@ -8,8 +8,8 @@ public:
     Doria(Vector2 startPosition);
     ~Doria() override;
 
-
-    void Draw() const override;
+    
+    bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks) override;
 
 private:
     Vector2 direction; // Dirección de movimiento

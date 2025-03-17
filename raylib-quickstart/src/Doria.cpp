@@ -14,13 +14,19 @@ Doria::Doria(Vector2 startPosition)
 
 Doria::~Doria() {}
 
-
-void Doria::Draw() const {
-    //DrawRectangle(position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y, CELL_SIZE, CELL_SIZE, GREEN);
-
+void Doria::DropBomb() {
 
 }
 
-void Doria::DropBomb() {
-
+bool Doria::CheckWallCollision(Vector2 Position, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
+    Rectangle enemyRec = { Position.x, Position.y, CELL_SIZE - 30, CELL_SIZE - 30 };
+    printf("GDFGDGDGGSGGSG");
+    for (const auto& wall : walls) {
+        Rectangle wallRec = wall.GetBound();
+        if (CheckCollisionRecs(enemyRec, wallRec)) {
+            return true; // Hay colisión
+        }
+    }
+    
+    return false; // No hay colisión
 }

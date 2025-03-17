@@ -15,12 +15,6 @@ Ballom::Ballom(Vector2 startPosition)
 Ballom::~Ballom() {}
 
 
-void Ballom::Draw() const {
-    //DrawRectangle(position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y, CELL_SIZE, CELL_SIZE, GREEN);
-    
-    
-}
-
 void Ballom::DropBomb() {
     
 }

@@ -9,7 +9,6 @@ public:
     ~Ballom() override;
 
     
-    void Draw() const override;
 
 private:
     Vector2 direction; // Dirección de movimiento
