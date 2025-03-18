@@ -6,7 +6,7 @@
 extern std::vector<Blast> blasts; 
 
 Bomb::Bomb(int startX, int startY) : x(startX), y(startY), active(true), timer(3.0f), range(8) {
-    texture = LoadTexture("resources/bomb01.png");
+    
 }
 
 Bomb::~Bomb() {
@@ -65,4 +65,8 @@ int Bomb::GetY() const {
 }
 int Bomb::GetRange() const {
     return range;
+}
+
+void Bomb::SetTexture(Texture2D tex) {
+    texture = tex;
 }

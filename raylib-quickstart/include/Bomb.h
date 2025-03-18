@@ -25,6 +25,8 @@ public:
     void Activate(int newX, int newY);
     bool IsActive() const;
    
+    void SetTexture(Texture2D texture);
+
     int GetX() const;
     int GetY() const;
     int GetRange() const;

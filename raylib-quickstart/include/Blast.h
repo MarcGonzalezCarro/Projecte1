@@ -18,6 +18,7 @@ public:
 
     void Update(float deltaTime);
     void Draw();
+    void SetTexture(Texture2D texture);
 };
 
 

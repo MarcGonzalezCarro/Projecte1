@@ -537,6 +537,7 @@
     <ClInclude Include="..\..\include\Game.h" />
     <ClInclude Include="..\..\include\Player.h" />
     <ClInclude Include="..\..\include\SoftBlock.h" />
+    <ClInclude Include="..\..\include\TextureManager.h" />
     <ClInclude Include="..\..\include\Wall.h" />
     <ClInclude Include="..\..\include\resource_dir.h" />
   </ItemGroup>
@@ -550,6 +551,7 @@
     <ClCompile Include="..\..\src\Game.cpp" />
     <ClCompile Include="..\..\src\Player.cpp" />
     <ClCompile Include="..\..\src\SoftBlock.cpp" />
+    <ClCompile Include="..\..\src\TextureManager.cpp" />
     <ClCompile Include="..\..\src\Wall.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
   </ItemGroup>

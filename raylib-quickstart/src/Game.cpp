@@ -4,17 +4,10 @@
 #include "Blast.h"
 #include "Ballom.h"
 #include "Doria.h"
+#include "TextureManager.h"
 
-Texture2D temp;
-Texture2D temp2;
 
-Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
-    
-    temp = LoadTexture("resources/test.png");
-    temp2 = LoadTexture("resources/Doria01.png");
-    AddWalls();
-}
-
+TextureManager textureManager;
 std::vector<Blast> blasts; // Definición de la variable global
 std::vector<std::unique_ptr<Enemy>> enemies;
 int enemyCounter = 0;
@@ -22,10 +15,16 @@ Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
 
 Ballom enemy(enemyStartPos);
 
+Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
+    textureManager.LoadTextures();
+    AddWalls();
+}
 
 void Game::Run() {
 
     
+    player.SetTexture(textureManager.GetTexture(0));
+    player.SetDirection({1,0});
 
     while (!WindowShouldClose()) {
         Update();
@@ -41,7 +40,8 @@ void Game::Update() {
     onBomb = CheckCollisions(player.GetBounds()) == 3;
 
     if (IsKeyDown(KEY_RIGHT)) { 
-        player.Move(4, 0);
+        Vector2 v = { 1,0 };
+        player.Move(4, 0, v);
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
@@ -52,7 +52,8 @@ void Game::Update() {
         
     }
     if (IsKeyDown(KEY_LEFT)) { 
-        player.Move(-4, 0); 
+        player.Move(-4, 0, {-1, 0});
+        
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
@@ -63,7 +64,8 @@ void Game::Update() {
         
     }
     if (IsKeyDown(KEY_DOWN)) { 
-        player.Move(0, 4); 
+        player.Move(0, 4, {0,-1});
+        
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
@@ -73,7 +75,8 @@ void Game::Update() {
         }
     }
     if (IsKeyDown(KEY_UP)) { 
-        player.Move(0, -4); 
+        player.Move(0, -4, {0,1});
+        
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
@@ -92,6 +95,7 @@ void Game::Update() {
         }
     }
     
+    player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
     //if (IsKeyPressed(KEY_E)) AddEnemy();
@@ -193,6 +197,7 @@ void Game::AddBomb() {
         
 
         bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
+        bombs.back()->SetTexture(textureManager.GetTexture(4));
         
     }
 }
@@ -221,6 +226,7 @@ void Game::AddBlasts(Bomb bomb) {
             }
 
             blasts.push_back(Blast(newPos));
+            blasts.back().SetTexture(textureManager.GetTexture(3));
             printf("dirX: %f, dirY: %f, posX: %f, posY: %f, siuuuu!\n", dir.x, dir.y, newPos.x, newPos.y);
         }
     }
@@ -249,11 +255,11 @@ void Game::AddEnemy(Vector2 pos) {
     int ran = std::rand() % 2;
     if (ran == 0) {
         enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
-        enemies.back()->SetTexture(temp);
+        enemies.back()->SetTexture(textureManager.GetTexture(4));
     }
     else {
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
-        enemies.back()->SetTexture(temp2);
+        enemies.back()->SetTexture(textureManager.GetTexture(3));
         enemies.back()->SetSpeed(0.5f);
     }
     enemyCounter++;

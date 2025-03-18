@@ -11,5 +11,6 @@ const int CAMERA_BORDER_MAX_X = 1800;
 const int CAMERA_BORDER_MIN_X = 700;
 const int CAMERA_BORDER_MAX_Y = 1100;
 const int CAMERA_BORDER_MIN_Y = 700;
+const int SPRITE_SIZE = 16;
 int CAMERA_OFFSET_X = 0;
 int CAMERA_OFFSET_Y = 0;

@@ -10,7 +10,7 @@ Blast::Blast(Vector2 pos) {
 
     // Expansión de la explosión
     affectedTiles.push_back(position);
-    texture = LoadTexture("resources/blast01.png");
+    
     
 }
 void Blast::UnloadT() {
@@ -33,4 +33,8 @@ void Blast::Draw() {
         DrawTextureEx(texture, v, 0, 6, WHITE);
         
     }
+}
+
+void Blast::SetTexture(Texture2D tex) {
+    texture = tex;
 }

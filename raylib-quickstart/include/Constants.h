@@ -12,6 +12,7 @@ extern const int CAMERA_BORDER_MAX_X;
 extern const int CAMERA_BORDER_MIN_X;
 extern const int CAMERA_BORDER_MAX_Y;
 extern const int CAMERA_BORDER_MIN_Y;
+extern const int SPRITE_SIZE;
 extern int CAMERA_OFFSET_X;
 extern int CAMERA_OFFSET_Y;
 
