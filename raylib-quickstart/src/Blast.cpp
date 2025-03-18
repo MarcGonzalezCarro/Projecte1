@@ -14,7 +14,7 @@ Blast::Blast(Vector2 pos) {
     
 }
 void Blast::UnloadT() {
-    UnloadTexture(texture);
+    
 }
 void Blast::Update(float deltaTime) {
     if (!active) return;

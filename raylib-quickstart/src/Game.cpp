@@ -11,6 +11,7 @@ TextureManager textureManager;
 std::vector<Blast> blasts; // Definición de la variable global
 std::vector<std::unique_ptr<Enemy>> enemies;
 int enemyCounter = 0;
+bool playerWalking = false;
 Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
 
 Ballom enemy(enemyStartPos);
@@ -38,10 +39,12 @@ void Game::Update() {
     int prevX = player.GetX();
     int prevY = player.GetY();
     onBomb = CheckCollisions(player.GetBounds()) == 3;
+    playerWalking = false;
 
     if (IsKeyDown(KEY_RIGHT)) { 
         Vector2 v = { 1,0 };
         player.Move(4, 0, v);
+        playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
@@ -53,7 +56,7 @@ void Game::Update() {
     }
     if (IsKeyDown(KEY_LEFT)) { 
         player.Move(-4, 0, {-1, 0});
-        
+        playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
@@ -65,7 +68,7 @@ void Game::Update() {
     }
     if (IsKeyDown(KEY_DOWN)) { 
         player.Move(0, 4, {0,-1});
-        
+        playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
@@ -76,7 +79,7 @@ void Game::Update() {
     }
     if (IsKeyDown(KEY_UP)) { 
         player.Move(0, -4, {0,1});
-        
+        playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
@@ -94,7 +97,12 @@ void Game::Update() {
             ResetStage();
         }
     }
-    
+    if (playerWalking) {
+        player.SetIdle(false);
+    }
+    else {
+        player.SetIdle(true);
+    }
     player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
@@ -197,7 +205,7 @@ void Game::AddBomb() {
         
 
         bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
-        bombs.back()->SetTexture(textureManager.GetTexture(4));
+        bombs.back()->SetTexture(textureManager.GetTexture(2));
         
     }
 }
@@ -226,7 +234,7 @@ void Game::AddBlasts(Bomb bomb) {
             }
 
             blasts.push_back(Blast(newPos));
-            blasts.back().SetTexture(textureManager.GetTexture(3));
+            blasts.back().SetTexture(textureManager.GetTexture(1));
             printf("dirX: %f, dirY: %f, posX: %f, posY: %f, siuuuu!\n", dir.x, dir.y, newPos.x, newPos.y);
         }
     }

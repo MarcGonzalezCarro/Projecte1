@@ -10,6 +10,7 @@ private:
     int currentFrame;
     int framesCounter;
     int framesSpeed;
+    bool idle;
     Texture2D texture;  // Textura del jugador
     Vector2 prevdirection;
     Vector2 newdirection;
@@ -27,6 +28,7 @@ public:
     void SetY(int newY);
     void SetDirection(Vector2 dir);
     void SetTexture(Texture2D texture);
+    void SetIdle(bool status);
     Rectangle GetBounds() const;
 
     int GetX() const;

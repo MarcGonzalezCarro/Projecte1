@@ -10,7 +10,7 @@ Bomb::Bomb(int startX, int startY) : x(startX), y(startY), active(true), timer(3
 }
 
 Bomb::~Bomb() {
-    UnloadTexture(texture);
+    
 }
 
 float Bomb::Update(float deltaTime) {
