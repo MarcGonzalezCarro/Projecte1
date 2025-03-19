@@ -131,22 +131,37 @@ void Game::Update() {
             ++it; 
         }
     }
-    for (auto it = enemies.begin(); it != enemies.end(); ) {
-        if (CheckBlastDamage((*it)->GetPosition())) {
-            it = enemies.erase(it); // std::unique_ptr se encarga de liberar la memoria
+    for (auto it = enemies.begin(); it != enemies.end(); /* no incremento aquí */) {
+        if (blasts.size() > 0) {
+            if (CheckBlastDamage((*it)->GetPosition())) {
+                (*it)->Die(); // Llama a Die() en lugar de eliminar inmediatamente
+            }
+        }
+        if (!(*it)->IsActive()) {
+            it = enemies.erase(it); // Elimina el enemigo solo si ya no está activo
             enemyCounter--;
         }
         else {
-            (*it)->Update(GetFrameTime(), walls, softBlocks);
-            ++it;
+            (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
+            ++it; // Incrementa el iterador manualmente
         }
+    }
+    for (auto it = softBlocks.begin(); it != softBlocks.end(); /* no incremento aquí */) {
+        if (it->IsDestroyed()) {
+            it->Update();
+            if (!it->IsActive()) {
+                it = softBlocks.erase(it);  // `erase` devuelve el siguiente iterador válido
+                continue; // Continuar sin incrementar el iterador manualmente
+            }
+        }
+        ++it; // Incremento explícito del iterador
     }
 
 }
 
 void Game::Draw() {
     BeginDrawing();
-    ClearBackground(BLACK);
+    ClearBackground(DARKGREEN);
 
     for (auto& wall : walls) wall.Draw();
     for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -163,7 +178,7 @@ void Game::Draw() {
     DrawText(TextFormat("Vidas: %d", player.GetLife()), 100, 50, 40, WHITE);
     DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
     DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 50, 40, WHITE);
-
+    DrawFPS(900,150);
     EndDrawing();
 }
 
@@ -176,6 +191,7 @@ void Game::AddWalls() {
             if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
                 if (i % 2 == 0 && j % 2 == 0) {
                     walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                    walls.back().SetTexture(textureManager.GetTexture(5));
                 }
                 else if ((i <= 3 && j <= 3)) {
                     //Lugar SEguro
@@ -183,6 +199,7 @@ void Game::AddWalls() {
                 else{
                     if (GetRandomValue(1, 4) == 1){
                     softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                    softBlocks.back().SetTexture(textureManager.GetTexture(5));
                         if (GetRandomValue(1, 4) == 1) {
                             Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
                             AddEnemy(v);
@@ -193,6 +210,7 @@ void Game::AddWalls() {
             
             else {
                 walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                walls.back().SetTexture(textureManager.GetTexture(5));
             }
         }
         
@@ -252,7 +270,7 @@ bool Game::IsBlastBlocked(Vector2 position) {
             printf("Ha chocado con: %f, %f\n", it->GetBound().x, it->GetBound().y);
 
             
-            softBlocks.erase(it);
+            it->Destroy();
             return true;  // Bloqueado
         }
     }

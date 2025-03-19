@@ -32,7 +32,7 @@ void Player::Update() {
         }
     }
     else {
-        currentFrame = 1;
+        currentFrame = 3;
     }
 }
 
@@ -42,9 +42,7 @@ void Player::Draw() const {
     Rectangle dest = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y, SPRITE_SIZE * 6, SPRITE_SIZE * 6 };
     Vector2 v2 = { 1, 1 };
 
-    DrawText(TextFormat("prevDireccion: %f, %f", prevdirection.x, prevdirection.y), 200, 120, 40, WHITE);
-    DrawText(TextFormat("newDireccion: %f, %f", newdirection.x, newdirection.y), 200, 150, 40, WHITE);
-    DrawText(TextFormat("currentFrame: %d, %d", currentFrame, framesCounter), 200, 180, 40, WHITE);
+    
     if (newdirection.x == (float) 1 && newdirection.y == (float) 0) {
         if (currentFrame != 3) {
             source.x = SPRITE_SIZE * 6 + SPRITE_SIZE * currentFrame;

@@ -8,12 +8,13 @@ class Wall {
 private:
     Rectangle position;
     Color color;
+    Texture2D texture;
 
 public:
     Wall(float x, float y);
     void Draw();
     Rectangle GetBound() const;
-    
+    void SetTexture(Texture2D text);
 };
 
 #endif

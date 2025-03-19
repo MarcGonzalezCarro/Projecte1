@@ -29,7 +29,8 @@ TextureManager::~TextureManager() {
 void TextureManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/BomberMan.png"));
     textures.push_back(LoadTexture("resources/Blast01.png"));
-    textures.push_back(LoadTexture("resources/bomb01.png"));
-    textures.push_back(LoadTexture("resources/Doria01.png"));
-    textures.push_back(LoadTexture("resources/test.png"));
+    textures.push_back(LoadTexture("resources/Bomb.png"));
+    textures.push_back(LoadTexture("resources/Doria.png"));
+    textures.push_back(LoadTexture("resources/Ballom.png"));
+    textures.push_back(LoadTexture("resources/Wall.png"));
 }

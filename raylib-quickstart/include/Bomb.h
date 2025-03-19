@@ -9,6 +9,9 @@ private:
     bool active;          // Estado de la bomba (activa/inactiva)
     float timer;          // Temporizador para explosión
     int range;
+    int framesCounter;
+    int framesSpeed;
+    int currentFrame;
     Texture2D texture;    // Textura de la bomba
 
 public:

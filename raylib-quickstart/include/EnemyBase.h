@@ -22,6 +22,9 @@ public:
     void SetTexture(Texture2D newTexture);
     virtual bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks);
     void SetSpeed(float temp);
+    bool IsActive();
+
+    void Die();
 
 protected:
     Vector2 position; // Posición del enemigo
@@ -31,6 +34,12 @@ protected:
     Texture2D texture;
     Vector2 direction;
     
+    int currentFrame;
+    int animFramesCounter;
+    int framesSpeed;
+
+    bool isDead;
+    bool isActive;
 };
 
 #endif // ENEMY_H

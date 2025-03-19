@@ -6,7 +6,9 @@
 extern std::vector<Blast> blasts; 
 
 Bomb::Bomb(int startX, int startY) : x(startX), y(startY), active(true), timer(3.0f), range(8) {
-    
+    currentFrame = 0;
+    framesCounter = 0;
+    framesSpeed = 6;
 }
 
 Bomb::~Bomb() {
@@ -16,7 +18,16 @@ Bomb::~Bomb() {
 float Bomb::Update(float deltaTime) {
     if (active) {
         timer -= deltaTime;
-        
+
+        framesCounter++;
+        if (framesCounter >= (60 / framesSpeed)) {
+            framesCounter = 0;
+            currentFrame++;
+
+            if (currentFrame > 2) {
+                currentFrame = 0;
+            }
+        }
     }
     return timer;
 }
@@ -29,8 +40,15 @@ void Bomb::Explode() {
 void Bomb::Draw() const {
     
     if (active) {
-        Vector2 v = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y};
-        DrawTextureEx(texture, v, 0, 6, WHITE);
+        Vector2 v = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y };
+        Rectangle source = { SPRITE_SIZE, 0, SPRITE_SIZE, SPRITE_SIZE };
+        Rectangle dest = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y, SPRITE_SIZE * 6, SPRITE_SIZE * 6 };
+        Vector2 v2 = { 1, 1 };
+
+        source.x = SPRITE_SIZE * currentFrame;
+
+        DrawTexturePro(texture, source, dest, v2, 0, WHITE);
+        
     }
      
 }
