@@ -34,6 +34,7 @@ public:
     bool IsBlastBlocked(Vector2 position);
     bool CheckBlastDamage(Vector2 pos);
     void GameOver();
+    void CheckPowerUPCollision(Rectangle rec);
 };
 
 extern std::vector<Blast> blasts;

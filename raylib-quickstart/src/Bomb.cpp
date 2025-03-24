@@ -5,7 +5,7 @@
 
 extern std::vector<Blast> blasts; 
 
-Bomb::Bomb(int startX, int startY) : x(startX), y(startY), active(true), timer(3.0f), range(8) {
+Bomb::Bomb(int startX, int startY) : x(startX), y(startY), active(true), timer(3.0f), range(BOMB_RANGE) {
     currentFrame = 0;
     framesCounter = 0;
     framesSpeed = 6;

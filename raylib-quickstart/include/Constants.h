@@ -15,5 +15,8 @@ extern const int CAMERA_BORDER_MIN_Y;
 extern const int SPRITE_SIZE;
 extern int CAMERA_OFFSET_X;
 extern int CAMERA_OFFSET_Y;
+extern int BOMB_RANGE;
+extern int MAX_BOMBS;
+extern int PLAYER_SPEED;
 
 #endif

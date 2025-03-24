@@ -157,5 +157,8 @@ bool Enemy::IsActive()
 {
     return isActive;
 }
-
+bool Enemy::IsDead()
+{
+    return isDead;
+}
 

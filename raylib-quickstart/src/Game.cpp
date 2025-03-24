@@ -4,13 +4,21 @@
 #include "Blast.h"
 #include "Ballom.h"
 #include "Doria.h"
+#include "PowerUp.h"
+#include "FireUp.h"
+#include "SpeedUp.h"
+#include "Bomb.h"
+#include "Exit.h"
 #include "TextureManager.h"
 
 
 TextureManager textureManager;
 std::vector<Blast> blasts; // Definición de la variable global
+std::vector<std::unique_ptr<PowerUp>> powerups;
 std::vector<std::unique_ptr<Enemy>> enemies;
+std::vector<Exit> exits;
 int enemyCounter = 0;
+int exitCounter = 0;
 bool playerWalking = false;
 Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
 
@@ -26,6 +34,7 @@ void Game::Run() {
     
     player.SetTexture(textureManager.GetTexture(0));
     player.SetDirection({1,0});
+    
 
     while (!WindowShouldClose()) {
         Update();
@@ -43,50 +52,52 @@ void Game::Update() {
 
     if (IsKeyDown(KEY_RIGHT)) { 
         Vector2 v = { 1,0 };
-        player.Move(4, 0, v);
+        player.Move(PLAYER_SPEED, 0, v);
         playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
             //MoverDerecha
-            CAMERA_OFFSET_X -= 4;
+            CAMERA_OFFSET_X -= PLAYER_SPEED;
             
         }
-        
+        CheckPowerUPCollision(player.GetBounds());
     }
     if (IsKeyDown(KEY_LEFT)) { 
-        player.Move(-4, 0, {-1, 0});
+        player.Move(-PLAYER_SPEED, 0, {-1, 0});
         playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
             //MoverIzquierda
             
-            CAMERA_OFFSET_X += 4;
+            CAMERA_OFFSET_X += PLAYER_SPEED;
         }
-        
+        CheckPowerUPCollision(player.GetBounds());
     }
     if (IsKeyDown(KEY_DOWN)) { 
-        player.Move(0, 4, {0,-1});
+        player.Move(0, PLAYER_SPEED, {0,-1});
         playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
             //MoverIzquierda
-            CAMERA_OFFSET_Y -= 4;
+            CAMERA_OFFSET_Y -= PLAYER_SPEED;
         }
+        CheckPowerUPCollision(player.GetBounds());
     }
     if (IsKeyDown(KEY_UP)) { 
-        player.Move(0, -4, {0,1});
+        player.Move(0, -PLAYER_SPEED, {0,1});
         playerWalking = true;
         if (CheckCollisions(player.GetBounds()) != 0) {
             player.SetY(prevY);
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
             //MoverIzquierda
-            CAMERA_OFFSET_Y += 4;
+            CAMERA_OFFSET_Y += PLAYER_SPEED;
         }
+        CheckPowerUPCollision(player.GetBounds());
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckBlastDamage(playerPos)) {
@@ -135,8 +146,10 @@ void Game::Update() {
     }
     for (auto it = enemies.begin(); it != enemies.end(); /* no incremento aquí */) {
         if (blasts.size() > 0) {
-            if (CheckBlastDamage((*it)->GetPosition())) {
-                (*it)->Die(); // Llama a Die() en lugar de eliminar inmediatamente
+            if ((*it)->IsDead() == false) {
+                if (CheckBlastDamage((*it)->GetPosition())) {
+                    (*it)->Die(); // Llama a Die() en lugar de eliminar inmediatamente
+                }
             }
         }
         if (!(*it)->IsActive()) {
@@ -166,7 +179,11 @@ void Game::Draw() {
     ClearBackground(DARKGREEN);
 
     for (auto& wall : walls) wall.Draw();
+    for (auto& exit : exits) exit.Draw();
     for (auto& softBlock : softBlocks) softBlock.Draw();
+    for (const auto& powerup : powerups) {
+        powerup->Draw(); // Accede al objeto apuntado por unique_ptr
+    }
     for (auto& bomb : bombs) bomb->Draw();
     for (auto& blast : blasts) {
         blast.Draw();
@@ -174,10 +191,11 @@ void Game::Draw() {
     for (const auto& enemy : enemies) {
         enemy->Draw(); // Accede al objeto apuntado por unique_ptr
     }
+    
 
     player.Draw();
     DrawText(TextFormat("Direccion: %d, %d", enemy.GetDirection().x, enemy.GetDirection().y), 100, 90, 40, WHITE);
-    DrawText(TextFormat("Vidas: %d", player.GetLife()), 100, 50, 40, WHITE);
+    DrawText(TextFormat("Vidas: %d", PLAYER_SPEED), 100, 50, 40, WHITE);
     DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
     DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 50, 40, WHITE);
     DrawFPS(900,150);
@@ -217,6 +235,10 @@ void Game::AddWalls() {
         }
         
     }
+    int temp = GetRandomValue(0, softBlocks.size() - 1);
+    exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
+    exits.back().SetTexture(textureManager.GetTexture(7));
+    printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
 }
 
 void Game::AddBomb() {
@@ -290,8 +312,12 @@ bool Game::IsBlastBlocked(Vector2 position) {
     for (auto it = softBlocks.begin(); it != softBlocks.end(); ++it) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
             
-
+            if (it->GetBound().x != exits.back().GetBound().x || it->GetBound().y != exits.back().GetBound().y) {
+                powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
+                powerups.back()->SetTexture(textureManager.GetTexture(6));
+            }
             
+            //printf("Añadido en: %f, %f\n", (*it).GetBound().x, (*it).GetBound().y);
             it->Destroy();
             return true;  // Bloqueado
         }
@@ -322,6 +348,20 @@ int Game::CheckCollisions(Rectangle rec) {
     }
     
     return 0;
+}
+
+void Game::CheckPowerUPCollision(Rectangle rec) {
+    for (auto it = powerups.begin(); it != powerups.end();) {
+        if (CheckCollisionRecs(rec, (*it)->GetBound())) {
+            (*it)->Effect(); // Aplicar el efecto
+
+            // Eliminar el PowerUp del vector después de aplicar el efecto
+            it = powerups.erase(it); // Esto elimina el elemento y avanza al siguiente
+        }
+        else {
+            ++it; // Solo avanza al siguiente si no se eliminó el actual
+        }
+    }
 }
 
 bool Game::CheckBlastDamage(Vector2 pos) {

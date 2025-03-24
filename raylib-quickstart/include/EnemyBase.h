@@ -23,7 +23,7 @@ public:
     virtual bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks);
     void SetSpeed(float temp);
     bool IsActive();
-
+    bool IsDead();
     void Die();
 
 protected:
