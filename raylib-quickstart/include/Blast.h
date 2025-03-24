@@ -9,7 +9,13 @@ public:
     Vector2 position;   // Posición de la explosión en la cuadrícula
     float timer;        // Tiempo antes de desaparecer
     int range;          // Cuántos bloques se expande la explosión
+    int direction;
+    bool finalB;
     bool active;        // Si la explosión sigue activa
+    bool reverseAnim;
+    int framesCounter;
+    int framesSpeed;
+    int currentFrame;
     std::vector<Vector2> affectedTiles; // Lista de celdas afectadas
     Texture2D texture;
 
@@ -19,6 +25,8 @@ public:
     void Update(float deltaTime);
     void Draw();
     void SetTexture(Texture2D texture);
+    void SetDirection(int direction);
+    void SetFinal(bool status);
 };
 
 

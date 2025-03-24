@@ -88,13 +88,13 @@ void Game::Update() {
             CAMERA_OFFSET_Y += 4;
         }
     }
-    Vector2 playerPos = {player.GetX() + 20, player.GetY() + 20};
+    Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckBlastDamage(playerPos)) {
         if (player.GetLife() <= 0) {
             GameOver();
         }
         else {
-            ResetStage();
+            //ResetStage();
         }
     }
     if (playerWalking) {
@@ -106,12 +106,14 @@ void Game::Update() {
     player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
-    //if (IsKeyPressed(KEY_E)) AddEnemy();
+    //if (IsKeyPressed(KEY_E)) {
+        //Player player2();
+    //}
 
     for (auto& blast : blasts) {
         blast.Update(GetFrameTime());
         if (!blast.active) {
-            blast.UnloadT(); 
+            //blast.UnloadT(); 
         }
     }
     
@@ -238,36 +240,56 @@ void Game::ExplodeBombs() {
 void Game::AddBlasts(Bomb bomb) {
     Vector2 bombPos = { bomb.GetX(), bomb.GetY() };
 
+    blasts.push_back(Blast(bombPos));
+    blasts.back().SetTexture(textureManager.GetTexture(1));
+    blasts.back().direction = 4;
+    
+
     // Direcciones: {arriba, abajo, izquierda, derecha}
     Vector2 directions[4] = { {0, -CELL_SIZE}, {0, CELL_SIZE}, {-CELL_SIZE, 0}, {CELL_SIZE, 0} };
-
+    int temp = 0;
+    int temp2 = 0;
     for (auto& dir : directions) {
+        temp2 = 0;
+
         for (int i = 1; i <= bomb.GetRange(); i++) {
             Vector2 newPos = { bombPos.x + dir.x * i, bombPos.y + dir.y * i };
-            printf("dirX: %f, dirY: %f, posX: %f, posY: %f\n", dir.x, dir.y, newPos.x, newPos.y);
+            
             if (IsBlastBlocked(newPos)) {
                 // Si choca con una pared, agregamos un último blast en esa posición y paramos
-                //blasts.push_back(Blast(newPos));
+                if (temp2 > 0) {
+                    blasts.back().direction = temp;
+                    blasts.back().SetFinal(true);
+                }
                 break;
             }
 
             blasts.push_back(Blast(newPos));
+            blasts.back().direction = temp;
             blasts.back().SetTexture(textureManager.GetTexture(1));
-            printf("dirX: %f, dirY: %f, posX: %f, posY: %f, siuuuu!\n", dir.x, dir.y, newPos.x, newPos.y);
+            if (temp2 == bomb.GetRange() - 1) {
+                blasts.back().SetFinal(true);
+            }
+            else {
+                blasts.back().SetFinal(false);
+            }
+            
+            temp2++;
         }
+        temp++;
     }
 }
 bool Game::IsBlastBlocked(Vector2 position) {
     for (const auto& wall : walls) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float) CELL_SIZE, (float)CELL_SIZE}, wall.GetBound())) {
-            printf("Ha chocao con: %f, %f\n", wall.GetBound().x, wall.GetBound().y);
+            
             return true;  // Blockeado 
             
         }
     }
     for (auto it = softBlocks.begin(); it != softBlocks.end(); ++it) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
-            printf("Ha chocado con: %f, %f\n", it->GetBound().x, it->GetBound().y);
+            
 
             
             it->Destroy();
@@ -303,10 +325,14 @@ int Game::CheckCollisions(Rectangle rec) {
 }
 
 bool Game::CheckBlastDamage(Vector2 pos) {
-    Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE};
+    Rectangle rec = { pos.x, pos.y, player.GetBounds().x, player.GetBounds().y };
     for (const auto& blast : blasts) {
-        Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE, CELL_SIZE};
-        if (CheckCollisionRecs(rec, r)) return true;
+        Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20};
+        if (CheckCollisionRecs(rec, r)) { 
+            //printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x,rec.y);
+            //printf("El rectangulo esta en: %f,%f y mide: %d,%d", blast.position.x,blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20);
+            return true; 
+        }
     }
     return false;
 }

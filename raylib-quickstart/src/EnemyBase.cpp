@@ -34,7 +34,6 @@ void Enemy::Update(float deltaTime, const std::vector<Wall>& walls, const std::v
             // Si no encontró dirección válida, se queda quieto
             if (!validDirection) {
                 direction = { 0, 0 };
-                printf("Sa queda quieto xdd");
             }
 
             framecounter = 120;  // Resetear en segundos, no en frames
