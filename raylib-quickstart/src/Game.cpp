@@ -5,6 +5,7 @@
 #include "Ballom.h"
 #include "Doria.h"
 #include "PowerUp.h"
+#include "BombUp.h"
 #include "FireUp.h"
 #include "SpeedUp.h"
 #include "Bomb.h"
@@ -195,9 +196,10 @@ void Game::Draw() {
 
     player.Draw();
     DrawText(TextFormat("Direccion: %d, %d", enemy.GetDirection().x, enemy.GetDirection().y), 100, 90, 40, WHITE);
-    DrawText(TextFormat("Vidas: %d", PLAYER_SPEED), 100, 50, 40, WHITE);
     DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
-    DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 50, 40, WHITE);
+    DrawText(TextFormat("Speed: %d", PLAYER_SPEED - 3), 1200, 50, 40, WHITE);
+    DrawText(TextFormat("Range: %d", BOMB_RANGE), 1200, 90, 40, WHITE);
+    DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
     DrawFPS(900,150);
     EndDrawing();
 }
@@ -243,7 +245,7 @@ void Game::AddWalls() {
 
 void Game::AddBomb() {
     
-    if (bombs.size() < 10) {
+    if (bombs.size() < MAX_BOMBS) {
         
 
         bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
@@ -313,8 +315,20 @@ bool Game::IsBlastBlocked(Vector2 position) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
             
             if (it->GetBound().x != exits.back().GetBound().x || it->GetBound().y != exits.back().GetBound().y) {
-                powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
-                powerups.back()->SetTexture(textureManager.GetTexture(6));
+                int ran = std::rand() % 4;
+                if (ran == 1) {
+                    powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                }
+                if (ran == 2) {
+                    powerups.push_back(std::make_unique<BombUp>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                }
+                if (ran == 3) {
+                    powerups.push_back(std::make_unique<FireUp>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                }
+                
             }
             
             //printf("Añadido en: %f, %f\n", (*it).GetBound().x, (*it).GetBound().y);
