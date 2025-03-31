@@ -35,4 +35,6 @@ void TextureManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/Wall.png")); //5
     textures.push_back(LoadTexture("resources/PowerUps.png")); //6
     textures.push_back(LoadTexture("resources/Exit.png")); //7
+    textures.push_back(LoadTexture("resources/Bomberman-TitleScreen.png")); //8
+    textures.push_back(LoadTexture("resources/Flecha.png")); //8
 }

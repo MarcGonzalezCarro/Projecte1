@@ -14,34 +14,93 @@
 
 
 TextureManager textureManager;
+Texture2D initialScreen;
+Texture2D arrowTexture;
+
+bool startScreen = true;
+bool gameRunning = false;
+
+int menuChoice = 0;
+int maxChoices = 3;
+
+Vector2 arrowPositions[] = {
+    {565, 660},  // Primera posición
+    {820, 660},  // Segunda posición
+    {600, 720},
+};
+
+int currentStage = 1;
+
 std::vector<Blast> blasts; // Definición de la variable global
 std::vector<std::unique_ptr<PowerUp>> powerups;
 std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
+
 int enemyCounter = 0;
 int exitCounter = 0;
 bool playerWalking = false;
-Vector2 enemyStartPos = { INITIAL_PLAYER_X, INITIAL_PLAYER_Y};
-
-Ballom enemy(enemyStartPos);
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     textureManager.LoadTextures();
-    AddWalls();
+    initialScreen = textureManager.GetTexture(8);
+    arrowTexture = textureManager.GetTexture(9);
 }
 
 void Game::Run() {
-
+    // Variables de estado del juego
     
+    // Configura la textura del jugador
     player.SetTexture(textureManager.GetTexture(0));
-    player.SetDirection({1,0});
-    
+    player.SetDirection({ 1, 0 });
 
     while (!WindowShouldClose()) {
-        Update();
+        if (startScreen) {
+            // Lógica para la pantalla inicial
+            if (IsKeyPressed(KEY_RIGHT)) {
+                menuChoice++;
+                if (menuChoice >= maxChoices) {
+                    menuChoice = 0;
+                }
+            }
+            if (IsKeyPressed(KEY_LEFT)) {
+                menuChoice--;
+                if (menuChoice < 0) {
+                    menuChoice = maxChoices - 1;
+                }
+            }
+            if (IsKeyPressed(KEY_ENTER)) { // Cambia KEY_ENTER por el botón que prefieras
+
+                switch (menuChoice)
+                {
+                case 0:
+                    printf("Aqui seria el start");
+                    startScreen = false;
+                    ResetStage();
+                    break;
+                case 1:
+                    printf("Aqui seria el continue");
+                    startScreen = false;
+                    ResetStage();
+                    break;
+                case 2:
+                    printf("Aqui seria el top");
+                    startScreen = false;
+                    ResetStage();
+                    break;
+                default:
+                    break;
+                }
+                
+            }
+        }
+        else if (gameRunning) {
+            // Lógica del juego principal
+            Update();
+        }
+
         Draw();
     }
-    
+
     CloseWindow();
 }
 
@@ -106,7 +165,7 @@ void Game::Update() {
             GameOver();
         }
         else {
-            //ResetStage();
+            ResetStage();
         }
     }
     if (playerWalking) {
@@ -118,9 +177,9 @@ void Game::Update() {
     player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
-    //if (IsKeyPressed(KEY_E)) {
-        //Player player2();
-    //}
+    if (IsKeyPressed(KEY_E)) {
+        NextLevel();
+    }
 
     for (auto& blast : blasts) {
         blast.Update(GetFrameTime());
@@ -177,30 +236,38 @@ void Game::Update() {
 
 void Game::Draw() {
     BeginDrawing();
-    ClearBackground(DARKGREEN);
+   
+    if (startScreen) {
+        ClearBackground(BLACK);
+        // Dibuja la pantalla inicial
+        DrawTextureEx(initialScreen, {(float)SCREEN_WIDTH/2 - 650, 50},0,4, WHITE);
+        DrawTextureEx(arrowTexture, { arrowPositions[menuChoice].x, arrowPositions[menuChoice].y}, 0, 4, WHITE);
+    }
+    else if(gameRunning){
+        ClearBackground(DARKGREEN);
+        DrawRectangle(0 + CAMERA_OFFSET_X,0 + CAMERA_OFFSET_Y,4000,250, GRAY);
+        for (auto& wall : walls) wall.Draw();
+        for (auto& exit : exits) exit.Draw();
+        for (auto& softBlock : softBlocks) softBlock.Draw();
+        for (const auto& powerup : powerups) {
+            powerup->Draw(); // Accede al objeto apuntado por unique_ptr
+        }
+        for (auto& bomb : bombs) bomb->Draw();
+        for (auto& blast : blasts) {
+            blast.Draw();
+        }
+        for (const auto& enemy : enemies) {
+            enemy->Draw(); // Accede al objeto apuntado por unique_ptr
+        }
 
-    for (auto& wall : walls) wall.Draw();
-    for (auto& exit : exits) exit.Draw();
-    for (auto& softBlock : softBlocks) softBlock.Draw();
-    for (const auto& powerup : powerups) {
-        powerup->Draw(); // Accede al objeto apuntado por unique_ptr
-    }
-    for (auto& bomb : bombs) bomb->Draw();
-    for (auto& blast : blasts) {
-        blast.Draw();
-    }
-    for (const auto& enemy : enemies) {
-        enemy->Draw(); // Accede al objeto apuntado por unique_ptr
-    }
-    
 
-    player.Draw();
-    DrawText(TextFormat("Direccion: %d, %d", enemy.GetDirection().x, enemy.GetDirection().y), 100, 90, 40, WHITE);
-    DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
-    DrawText(TextFormat("Speed: %d", PLAYER_SPEED - 3), 1200, 50, 40, WHITE);
-    DrawText(TextFormat("Range: %d", BOMB_RANGE), 1200, 90, 40, WHITE);
-    DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
-    DrawFPS(900,150);
+        player.Draw();
+        DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
+        DrawText(TextFormat("Speed: %d", PLAYER_SPEED - 3), 1200, 50, 40, WHITE);
+        DrawText(TextFormat("Range: %d", BOMB_RANGE), 1200, 90, 40, WHITE);
+        DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
+        DrawFPS(900, 150);
+    }
     EndDrawing();
 }
 
@@ -392,16 +459,67 @@ bool Game::CheckBlastDamage(Vector2 pos) {
 }
 
 void Game::ResetStage() {
+    gameRunning = false;
     blasts.clear();
     bombs.clear();
     enemies.clear();
+    exits.clear();
+    powerups.clear();
+    exitCounter = 0;
     enemyCounter = 0;
     CAMERA_OFFSET_X = 0;
     CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     player.DecreaseLife();
     AddWalls();
+    //Empezar subrutina
+    ShowStageScreen("Stage ");
 }
+
+void Game::ShowStageScreen(const char* stageText) {
+    // Establecer el tiempo objetivo: 2 segundos
+    const float duration = 2.0f; // Duración en segundos
+    float timer = 0; // Temporizador para contar el tiempo transcurrido
+
+    while (timer < duration) {   // Mientras el tiempo transcurrido sea menor que 2 segundos
+        BeginDrawing();
+        ClearBackground(BLACK);
+
+        int screenWidth = GetScreenWidth();
+        int screenHeight = GetScreenHeight();
+        int textWidth = MeasureText(stageText, 50); // Mide el ancho del texto
+        int textX = 750;
+        int textY = screenHeight / 2;
+
+        if (timer > 0.2f && timer < 1.8f) {
+            DrawText(TextFormat("%s %d", stageText, currentStage), textX, textY, 50, WHITE);
+        }
+        EndDrawing();
+
+        timer += GetFrameTime(); // Incrementa el temporizador basado en el tiempo por frame
+    }
+    gameRunning = true;
+}
+
+void Game::NextLevel() {
+    currentStage++;
+
+    gameRunning = false;
+    blasts.clear();
+    bombs.clear();
+    enemies.clear();
+    exits.clear();
+    powerups.clear();
+    exitCounter = 0;
+    enemyCounter = 0;
+    CAMERA_OFFSET_X = 0;
+    CAMERA_OFFSET_Y = 0;
+    player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    AddWalls();
+    //Empezar subrutina
+    ShowStageScreen("Stage ");
+}
+
 void Game::GameOver() {
 
 }

@@ -34,6 +34,8 @@ public:
     bool IsBlastBlocked(Vector2 position);
     bool CheckBlastDamage(Vector2 pos);
     void GameOver();
+    void NextLevel();
+    void ShowStageScreen(const char* stageText);
     void CheckPowerUPCollision(Rectangle rec);
 };
 
