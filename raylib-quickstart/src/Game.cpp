@@ -158,6 +158,9 @@ void Game::Update() {
             CAMERA_OFFSET_Y += PLAYER_SPEED;
         }
         CheckPowerUPCollision(player.GetBounds());
+        if (enemyCounter == 0) {
+            CheckExitCollision();
+        }
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckBlastDamage(playerPos)) {
@@ -181,15 +184,15 @@ void Game::Update() {
         NextLevel();
     }
 
-    for (auto& blast : blasts) {
-        blast.Update(GetFrameTime());
-        if (!blast.active) {
-            //blast.UnloadT(); 
+    for (auto it = blasts.begin(); it != blasts.end(); ) {
+        it->Update(GetFrameTime()); // Actualización de cada blast
+        if (!it->active) {
+            it = blasts.erase(it); // Eliminar blast si no está activo
+        }
+        else {
+            ++it; // Avanzar al siguiente
         }
     }
-    
-    blasts.erase(std::remove_if(blasts.begin(), blasts.end(),
-        [](Blast& b) { return !b.active; }), blasts.end());
 
     for (auto it = bombs.begin(); it != bombs.end(); ) {
         float temp = (*it)->Update(GetFrameTime());
@@ -266,6 +269,7 @@ void Game::Draw() {
         DrawText(TextFormat("Speed: %d", PLAYER_SPEED - 3), 1200, 50, 40, WHITE);
         DrawText(TextFormat("Range: %d", BOMB_RANGE), 1200, 90, 40, WHITE);
         DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
+        DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 150, 40, WHITE);
         DrawFPS(900, 150);
     }
     EndDrawing();
@@ -431,6 +435,14 @@ int Game::CheckCollisions(Rectangle rec) {
     return 0;
 }
 
+void Game::CheckExitCollision() {
+    Rectangle p = {player.GetBounds().x, player.GetBounds().y, CELL_SIZE, CELL_SIZE};
+    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y };
+    if (CheckCollisionRecs(p, e)) {
+        NextLevel();
+    }
+}
+
 void Game::CheckPowerUPCollision(Rectangle rec) {
     for (auto it = powerups.begin(); it != powerups.end();) {
         if (CheckCollisionRecs(rec, (*it)->GetBound())) {
@@ -446,11 +458,11 @@ void Game::CheckPowerUPCollision(Rectangle rec) {
 }
 
 bool Game::CheckBlastDamage(Vector2 pos) {
-    Rectangle rec = { pos.x, pos.y, player.GetBounds().x, player.GetBounds().y };
+    Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE};
     for (const auto& blast : blasts) {
         Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20};
         if (CheckCollisionRecs(rec, r)) { 
-            //printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x,rec.y);
+            printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x,rec.y);
             //printf("El rectangulo esta en: %f,%f y mide: %d,%d", blast.position.x,blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20);
             return true; 
         }
