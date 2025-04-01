@@ -28,7 +28,7 @@ Vector2 arrowPositions[] = {
     {565, 660},  // Primera posición
     {820, 660},  // Segunda posición
     {600, 720},
-    {820, 720}
+    {840, 720}
 };
 
 int currentStage = 1;
@@ -39,7 +39,7 @@ std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
 
 int enemyCounter = 0;
-int exitCounter = 0;
+
 bool playerWalking = false;
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
@@ -170,9 +170,6 @@ void Game::Update() {
             CAMERA_OFFSET_Y += PLAYER_SPEED;
         }
         CheckPowerUPCollision(player.GetBounds());
-        if (enemyCounter == 0) {
-            CheckExitCollision();
-        }
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckBlastDamage(playerPos)) {
@@ -189,20 +186,33 @@ void Game::Update() {
     else {
         player.SetIdle(true);
     }
+    if (enemyCounter == 0) {
+        CheckExitCollision();
+    }
     player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Debug Mode
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     if (IsKeyPressed(KEY_E)) {
-        NextLevel();
+        for (auto it = enemies.begin(); it != enemies.end();) {
+            (*it)->Die();
+            ++it;             
+        }
+        for (auto it = softBlocks.begin(); it != softBlocks.end();) {
+            it->Destroy();
+            ++it; 
+        }
     }
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (auto it = blasts.begin(); it != blasts.end(); ) {
         it->Update(GetFrameTime()); // Actualización de cada blast
         if (!it->active) {
             it = blasts.erase(it); // Eliminar blast si no está activo
         }
         else {
-            ++it; // Avanzar al siguiente
+            ++it; 
         }
     }
 
@@ -219,7 +229,7 @@ void Game::Update() {
             ++it; 
         }
     }
-    for (auto it = enemies.begin(); it != enemies.end(); /* no incremento aquí */) {
+    for (auto it = enemies.begin(); it != enemies.end();) {
         if (blasts.size() > 0) {
             if ((*it)->IsDead() == false) {
                 if (CheckBlastDamage((*it)->GetPosition())) {
@@ -233,14 +243,14 @@ void Game::Update() {
         }
         else {
             (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
-            ++it; // Incrementa el iterador manualmente
+            ++it; 
         }
     }
     for (auto it = softBlocks.begin(); it != softBlocks.end(); /* no incremento aquí */) {
         if (it->IsDestroyed()) {
             it->Update();
             if (!it->IsActive()) {
-                it = softBlocks.erase(it);  // `erase` devuelve el siguiente iterador válido
+                it = softBlocks.erase(it); 
                 continue; // Continuar sin incrementar el iterador manualmente
             }
         }
@@ -286,7 +296,7 @@ void Game::Draw() {
     }
     else if (inCredits) {
         ClearBackground(BLACK);
-        DrawText(":D", 100,100,40,WHITE);
+        DrawText("", 100,100,40,WHITE);
         DrawText("Back", 140, 700, 40, WHITE);
         DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
     }
@@ -455,7 +465,7 @@ int Game::CheckCollisions(Rectangle rec) {
 
 void Game::CheckExitCollision() {
     Rectangle p = {player.GetBounds().x, player.GetBounds().y, CELL_SIZE, CELL_SIZE};
-    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y };
+    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE, CELL_SIZE};
     if (CheckCollisionRecs(p, e)) {
         NextLevel();
     }
@@ -495,7 +505,6 @@ void Game::ResetStage() {
     enemies.clear();
     exits.clear();
     powerups.clear();
-    exitCounter = 0;
     enemyCounter = 0;
     CAMERA_OFFSET_X = 0;
     CAMERA_OFFSET_Y = 0;
@@ -540,7 +549,6 @@ void Game::NextLevel() {
     enemies.clear();
     exits.clear();
     powerups.clear();
-    exitCounter = 0;
     enemyCounter = 0;
     CAMERA_OFFSET_X = 0;
     CAMERA_OFFSET_Y = 0;
