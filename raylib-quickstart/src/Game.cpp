@@ -19,14 +19,16 @@ Texture2D arrowTexture;
 
 bool startScreen = true;
 bool gameRunning = false;
+bool inCredits = false;
 
 int menuChoice = 0;
-int maxChoices = 3;
+int maxChoices = 4;
 
 Vector2 arrowPositions[] = {
     {565, 660},  // Primera posición
     {820, 660},  // Segunda posición
     {600, 720},
+    {820, 720}
 };
 
 int currentStage = 1;
@@ -87,6 +89,10 @@ void Game::Run() {
                     startScreen = false;
                     ResetStage();
                     break;
+                case 3:
+                    startScreen = false;
+                    inCredits = true;
+                    break;
                 default:
                     break;
                 }
@@ -96,6 +102,12 @@ void Game::Run() {
         else if (gameRunning) {
             // Lógica del juego principal
             Update();
+        }
+        else if (inCredits) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                startScreen = true;
+                inCredits = false;
+            }
         }
 
         Draw();
@@ -271,6 +283,12 @@ void Game::Draw() {
         DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
         DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 150, 40, WHITE);
         DrawFPS(900, 150);
+    }
+    else if (inCredits) {
+        ClearBackground(BLACK);
+        DrawText(":D", 100,100,40,WHITE);
+        DrawText("Back", 140, 700, 40, WHITE);
+        DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
     }
     EndDrawing();
 }
