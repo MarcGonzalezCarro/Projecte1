@@ -10,7 +10,12 @@
 #include "SpeedUp.h"
 #include "Bomb.h"
 #include "Exit.h"
+#include "SaveGame.h"
 #include "TextureManager.h"
+#include <sstream>
+#include <string>
+#include <algorithm>
+
 
 
 TextureManager textureManager;
@@ -20,20 +25,27 @@ Texture2D arrowTexture;
 bool startScreen = true;
 bool gameRunning = false;
 bool inCredits = false;
+bool inTop = false;
+bool isDead = false;
 
 int menuChoice = 0;
 int maxChoices = 4;
 
+char playerName[50] = "";  // Buffer
+int nameLength = 0;
+int playerScore = 0;
+
 Vector2 arrowPositions[] = {
-    {565, 660},  // Primera posición
-    {820, 660},  // Segunda posición
+    {565, 660}, 
+    {820, 660},  
     {600, 720},
     {840, 720}
 };
 
 int currentStage = 1;
 
-std::vector<Blast> blasts; // Definición de la variable global
+std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
+std::vector<Blast> blasts; 
 std::vector<std::unique_ptr<PowerUp>> powerups;
 std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
@@ -49,15 +61,13 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
 }
 
 void Game::Run() {
-    // Variables de estado del juego
     
-    // Configura la textura del jugador
     player.SetTexture(textureManager.GetTexture(0));
     player.SetDirection({ 1, 0 });
 
     while (!WindowShouldClose()) {
         if (startScreen) {
-            // Lógica para la pantalla inicial
+            
             if (IsKeyPressed(KEY_RIGHT)) {
                 menuChoice++;
                 if (menuChoice >= maxChoices) {
@@ -70,7 +80,7 @@ void Game::Run() {
                     menuChoice = maxChoices - 1;
                 }
             }
-            if (IsKeyPressed(KEY_ENTER)) { // Cambia KEY_ENTER por el botón que prefieras
+            if (IsKeyPressed(KEY_ENTER)) { 
 
                 switch (menuChoice)
                 {
@@ -85,9 +95,8 @@ void Game::Run() {
                     ResetStage();
                     break;
                 case 2:
-                    printf("Aqui seria el top");
                     startScreen = false;
-                    ResetStage();
+                    inTop = true;
                     break;
                 case 3:
                     startScreen = false;
@@ -100,13 +109,59 @@ void Game::Run() {
             }
         }
         else if (gameRunning) {
-            // Lógica del juego principal
             Update();
         }
         else if (inCredits) {
             if (IsKeyPressed(KEY_ENTER)) {
                 startScreen = true;
                 inCredits = false;
+            }
+        }
+        else if (inTop) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                startScreen = true;
+                inTop = false;
+            }
+        }
+        else if (isDead) {
+            if (IsKeyPressed(KEY_BACKSPACE) && nameLength > 0)
+            {
+                nameLength--;
+                playerName[nameLength] = '\0';
+            }
+            if (IsKeyPressed(KEY_ENTER)) {
+                SaveGame::SaveNameToFile(playerName, playerScore);
+                entries = SaveGame::GetEntriesFromFile();
+
+                std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
+                    return a.score > b.score;  // Ordenar por puntuación de mayor a menor
+                    });
+
+                std::vector<ScoreEntry> temp;
+                if (entries.size() > MAX_TOPSCORES - 1) {
+                    for (int i = 0; i < MAX_TOPSCORES - 1; i++) {
+                        temp.push_back(entries[i]);
+                    }
+                    SaveGame::SaveEntriesToFile(temp);
+                }
+                else {
+                    SaveGame::SaveEntriesToFile(entries);
+                }
+                
+                startScreen = true;
+                isDead = false;
+            }
+
+            for (int i = 0; i < 26; i++)  // 'a' a 'z'
+            {
+                if (IsKeyPressed(KEY_A + i))
+                {
+                    if (nameLength < sizeof(playerName) - 1)  
+                    {
+                        playerName[nameLength] = 'a' + i;
+                        nameLength++;
+                    }
+                }
             }
         }
 
@@ -154,7 +209,7 @@ void Game::Update() {
             player.SetY(prevY);
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-            //MoverIzquierda
+            //MoverAbajo
             CAMERA_OFFSET_Y -= PLAYER_SPEED;
         }
         CheckPowerUPCollision(player.GetBounds());
@@ -166,7 +221,7 @@ void Game::Update() {
             player.SetY(prevY);
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-            //MoverIzquierda
+            //MoverArriba
             CAMERA_OFFSET_Y += PLAYER_SPEED;
         }
         CheckPowerUPCollision(player.GetBounds());
@@ -205,9 +260,15 @@ void Game::Update() {
             ++it; 
         }
     }
+    if (IsKeyPressed(KEY_Y)) {
+        GameOver();
+    }
+    if (IsKeyPressed(KEY_P)) {
+        playerScore += 100;
+    }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (auto it = blasts.begin(); it != blasts.end(); ) {
-        it->Update(GetFrameTime()); // Actualización de cada blast
+        it->Update(GetFrameTime()); 
         if (!it->active) {
             it = blasts.erase(it); // Eliminar blast si no está activo
         }
@@ -233,12 +294,12 @@ void Game::Update() {
         if (blasts.size() > 0) {
             if ((*it)->IsDead() == false) {
                 if (CheckBlastDamage((*it)->GetPosition())) {
-                    (*it)->Die(); // Llama a Die() en lugar de eliminar inmediatamente
+                    (*it)->Die(); // Llama a Die()
                 }
             }
         }
         if (!(*it)->IsActive()) {
-            it = enemies.erase(it); // Elimina el enemigo solo si ya no está activo
+            it = enemies.erase(it); // Elimina el enemigo
             enemyCounter--;
         }
         else {
@@ -246,15 +307,15 @@ void Game::Update() {
             ++it; 
         }
     }
-    for (auto it = softBlocks.begin(); it != softBlocks.end(); /* no incremento aquí */) {
+    for (auto it = softBlocks.begin(); it != softBlocks.end();) {
         if (it->IsDestroyed()) {
             it->Update();
             if (!it->IsActive()) {
                 it = softBlocks.erase(it); 
-                continue; // Continuar sin incrementar el iterador manualmente
+                continue;
             }
         }
-        ++it; // Incremento explícito del iterador
+        ++it; 
     }
 
 }
@@ -264,7 +325,6 @@ void Game::Draw() {
    
     if (startScreen) {
         ClearBackground(BLACK);
-        // Dibuja la pantalla inicial
         DrawTextureEx(initialScreen, {(float)SCREEN_WIDTH/2 - 650, 50},0,4, WHITE);
         DrawTextureEx(arrowTexture, { arrowPositions[menuChoice].x, arrowPositions[menuChoice].y}, 0, 4, WHITE);
     }
@@ -275,14 +335,14 @@ void Game::Draw() {
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
         for (const auto& powerup : powerups) {
-            powerup->Draw(); // Accede al objeto apuntado por unique_ptr
+            powerup->Draw(); 
         }
         for (auto& bomb : bombs) bomb->Draw();
         for (auto& blast : blasts) {
             blast.Draw();
         }
         for (const auto& enemy : enemies) {
-            enemy->Draw(); // Accede al objeto apuntado por unique_ptr
+            enemy->Draw(); 
         }
 
 
@@ -299,6 +359,32 @@ void Game::Draw() {
         DrawText("", 100,100,40,WHITE);
         DrawText("Back", 140, 700, 40, WHITE);
         DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+    }
+    else if (inTop) {
+        ClearBackground(BLACK);
+        DrawText("Top Scores", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
+        int yPosition = 300; // Posición inicial en Y para mostrar las entradas
+        for (const auto& entry : entries) {
+            std::string displayText = entry.name + " - " + std::to_string(entry.score);
+            DrawText(displayText.c_str(), (float)SCREEN_WIDTH / 2 - 200, yPosition, 30, WHITE);
+            yPosition += 40; // Mover hacia abajo para la siguiente entrada
+        }
+
+        DrawText("Back", 140, 700, 40, WHITE);
+        DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+    }
+    else if (isDead) {
+        ClearBackground(BLACK);
+        DrawText("Introduce Name:", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
+
+        // Dibujar la línea de guiones bajos y reemplazarlos por las letras
+        for (int i = 0; i < 5; i++) // Mostrar un máximo de 20 caracteres
+        {
+            if (i < nameLength)
+                DrawText(TextFormat("%c", playerName[i]), (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE);
+            else
+                DrawText("_", (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE); // Mostrar guiones bajos
+        }
     }
     EndDrawing();
 }
@@ -559,5 +645,6 @@ void Game::NextLevel() {
 }
 
 void Game::GameOver() {
-
+    gameRunning = false;
+    isDead = true;
 }

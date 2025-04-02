@@ -540,6 +540,7 @@
     <ClInclude Include="..\..\include\Game.h" />
     <ClInclude Include="..\..\include\Player.h" />
     <ClInclude Include="..\..\include\PowerUp.h" />
+    <ClInclude Include="..\..\include\SaveGame.h" />
     <ClInclude Include="..\..\include\SoftBlock.h" />
     <ClInclude Include="..\..\include\SpeedUp.h" />
     <ClInclude Include="..\..\include\TextureManager.h" />
@@ -559,6 +560,7 @@
     <ClCompile Include="..\..\src\Game.cpp" />
     <ClCompile Include="..\..\src\Player.cpp" />
     <ClCompile Include="..\..\src\PowerUp.cpp" />
+    <ClCompile Include="..\..\src\SaveGame.cpp" />
     <ClCompile Include="..\..\src\SoftBlock.cpp" />
     <ClCompile Include="..\..\src\SpeedUp.cpp" />
     <ClCompile Include="..\..\src\TextureManager.cpp" />
