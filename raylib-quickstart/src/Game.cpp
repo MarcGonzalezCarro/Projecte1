@@ -149,14 +149,14 @@ void Game::Run() {
             }
             if (IsKeyPressed(KEY_DOWN) && viewingScores) {
                 topScoreChoice++;
-                if (topScoreChoice > MAX_TOPSCORES) {
+                if (topScoreChoice > entries.size() - 1) {
                     topScoreChoice = 0;
                 }
             }
             if (IsKeyPressed(KEY_UP) && viewingScores) {
                 topScoreChoice--;
                 if (topScoreChoice < 0) {
-                    topScoreChoice = MAX_TOPSCORES - 1;
+                    topScoreChoice = entries.size() - 1;
                 }
             }
             
@@ -447,7 +447,7 @@ void Game::Draw() {
             DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
         }
         else {
-            DrawTextureEx(arrowTexture, { 300,(float) 100 * topScoreChoice}, 0, 4, WHITE);
+            DrawTextureEx(arrowTexture, { 700,(float) 300 + 40 * topScoreChoice}, 0, 4, WHITE);
         }
     }
     else if (viewingTop) {
@@ -458,18 +458,18 @@ void Game::Draw() {
             const ScoreEntry& selectedEntry = entries[topScoreChoice];
 
             // Mostrar el nombre y el puntaje del jugador seleccionado
-            DrawText(("Name: " + selectedEntry.name).c_str(), 50, 100, 30, WHITE);
-            DrawText(("Score: " + std::to_string(selectedEntry.score)).c_str(), 50, 150, 30, WHITE);
+            DrawText(("Name: " + selectedEntry.name).c_str(), 800, 100, 30, WHITE);
+            DrawText(("Score: " + std::to_string(selectedEntry.score)).c_str(), 800, 150, 30, WHITE);
 
             // Mostrar las estadísticas del jugador
-            DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 50, 200, 30, WHITE);
-            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 50, 250, 30, WHITE);
-            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 50, 300, 30, WHITE);
-            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 50, 350, 30, WHITE);
-            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 50, 400, 30, WHITE);
-            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 100, 450, 30, WHITE);
-            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 100, 500, 30, WHITE);
-            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 100, 550, 30, WHITE);
+            DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 800, 200, 30, WHITE);
+            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 800, 250, 30, WHITE);
+            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 800, 300, 30, WHITE);
+            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 800, 350, 30, WHITE);
+            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 800, 400, 30, WHITE);
+            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 850, 450, 30, WHITE);
+            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 850, 500, 30, WHITE);
+            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 850, 550, 30, WHITE);
 
             // Volver al menú principal o salir
             DrawText("Back", 140, 700, 40, WHITE);
