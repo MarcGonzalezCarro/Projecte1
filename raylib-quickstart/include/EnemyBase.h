@@ -9,6 +9,7 @@
 class Enemy {
 public:
     Enemy(Vector2 startPosition); // Constructor
+    int id;
     virtual ~Enemy(); // Destructor virtual para herencia
 
     virtual void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks); // Actualización del enemigo (movimientos, lógica)

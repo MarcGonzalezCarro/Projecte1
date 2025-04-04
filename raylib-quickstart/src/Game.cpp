@@ -26,9 +26,12 @@ bool startScreen = true;
 bool gameRunning = false;
 bool inCredits = false;
 bool inTop = false;
+bool viewingTop = false;
 bool isDead = false;
 
 int menuChoice = 0;
+int topScoreChoice = 0;
+bool viewingScores = false;
 int maxChoices = 4;
 
 char playerName[50] = "";  // Buffer
@@ -58,6 +61,19 @@ double startTime = GetTime();
 double targetTime = 200.0;
 double elapsedTime;
 double remainingTime;
+
+////////////////////////////
+//FOR STATS
+////////////////////////////
+int ballomKills = 0;
+int doriaKills = 0;
+int bombsPlanted = 0;
+int softBlocksDestroyed = 0;
+int powerUpsPicked = 0;
+int fireUpCounter = 0;
+int bombUpCounter = 0;
+int speedUpCounter = 0;
+////////////////////////////
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     textureManager.LoadTextures();
@@ -125,9 +141,39 @@ void Game::Run() {
             }
         }
         else if (inTop) {
-            if (IsKeyPressed(KEY_ENTER)) {
+            if (IsKeyPressed(KEY_RIGHT)) {
+                viewingScores = true;
+            }
+            if (IsKeyPressed(KEY_LEFT)) {
+                viewingScores = false;
+            }
+            if (IsKeyPressed(KEY_DOWN) && viewingScores) {
+                topScoreChoice++;
+                if (topScoreChoice > MAX_TOPSCORES) {
+                    topScoreChoice = 0;
+                }
+            }
+            if (IsKeyPressed(KEY_UP) && viewingScores) {
+                topScoreChoice--;
+                if (topScoreChoice < 0) {
+                    topScoreChoice = MAX_TOPSCORES - 1;
+                }
+            }
+            
+            if (IsKeyPressed(KEY_ENTER) && !viewingScores) {
                 startScreen = true;
                 inTop = false;
+            }
+            else if (IsKeyPressed(KEY_ENTER) && viewingScores) {
+                viewingTop = true;
+                inTop = false;
+            }
+
+        }
+        else if (viewingTop) {
+            if (IsKeyPressed(KEY_ENTER)) {
+                inTop = true;
+                viewingTop = false;
             }
         }
         else if (isDead) {
@@ -137,7 +183,7 @@ void Game::Run() {
                 playerName[nameLength] = '\0';
             }
             if (IsKeyPressed(KEY_ENTER)) {
-                SaveGame::SaveNameToFile(playerName, playerScore);
+                SaveGame::SaveNameToFile(playerName, playerScore, ballomKills,doriaKills,bombsPlanted,softBlocksDestroyed,powerUpsPicked,fireUpCounter,bombUpCounter,speedUpCounter);
                 entries = SaveGame::GetEntriesFromFile();
 
                 std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
@@ -270,6 +316,7 @@ void Game::Update() {
         }
         for (auto it = softBlocks.begin(); it != softBlocks.end();) {
             it->Destroy();
+            softBlocksDestroyed++;
             ++it; 
         }
     }
@@ -313,6 +360,17 @@ void Game::Update() {
             }
         }
         if (!(*it)->IsActive()) {
+            switch ((*it)->id)
+            {
+            case 0:
+                ballomKills++;
+                break;
+            case 1:
+                doriaKills++;
+                break;
+            default:
+                break;
+            }
             it = enemies.erase(it); // Elimina el enemigo
             enemyCounter--;
         }
@@ -385,7 +443,40 @@ void Game::Draw() {
         }
 
         DrawText("Back", 140, 700, 40, WHITE);
-        DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+        if (!viewingScores) {
+            DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+        }
+        else {
+            DrawTextureEx(arrowTexture, { 300,(float) 100 * topScoreChoice}, 0, 4, WHITE);
+        }
+    }
+    else if (viewingTop) {
+        ClearBackground(BLACK);
+
+        // Asegurarse de que topScoreChoice esté dentro de los límites
+        if (topScoreChoice >= 0 && topScoreChoice < entries.size()) {
+            const ScoreEntry& selectedEntry = entries[topScoreChoice];
+
+            // Mostrar el nombre y el puntaje del jugador seleccionado
+            DrawText(("Name: " + selectedEntry.name).c_str(), 50, 100, 30, WHITE);
+            DrawText(("Score: " + std::to_string(selectedEntry.score)).c_str(), 50, 150, 30, WHITE);
+
+            // Mostrar las estadísticas del jugador
+            DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 50, 200, 30, WHITE);
+            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 50, 250, 30, WHITE);
+            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 50, 300, 30, WHITE);
+            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 50, 350, 30, WHITE);
+            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 50, 400, 30, WHITE);
+            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 100, 450, 30, WHITE);
+            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 100, 500, 30, WHITE);
+            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 100, 550, 30, WHITE);
+
+            // Volver al menú principal o salir
+            DrawText("Back", 140, 700, 40, WHITE);
+            if (viewingScores) {
+                DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+            }
+        }
     }
     else if (isDead) {
         ClearBackground(BLACK);
@@ -449,6 +540,8 @@ void Game::AddBomb() {
 
         bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
         bombs.back()->SetTexture(textureManager.GetTexture(2));
+
+        bombsPlanted++;
         
     }
 }
@@ -575,7 +668,21 @@ void Game::CheckPowerUPCollision(Rectangle rec) {
     for (auto it = powerups.begin(); it != powerups.end();) {
         if (CheckCollisionRecs(rec, (*it)->GetBound())) {
             (*it)->Effect(); // Aplicar el efecto
-
+            switch ((*it)->id)
+            {
+            case 0:
+                bombUpCounter++;
+                break;
+            case 1:
+                fireUpCounter++;
+                break;
+            case 2:
+                speedUpCounter++;
+                break;
+            default:
+                break;
+            }
+            powerUpsPicked++;
             // Eliminar el PowerUp del vector después de aplicar el efecto
             it = powerups.erase(it); // Esto elimina el elemento y avanza al siguiente
         }

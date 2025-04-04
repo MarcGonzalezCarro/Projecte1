@@ -1,10 +1,2 @@
-lul,4900
-adada,4600
-afasif,4200
-hola,3100
-dihfd,2100
-oksod,2100
-odids,1900
-popop,500
-sfosf,500
-oioio,300
+holas,1600000,0,0,2,0,2,0,1,1
+hola,1200000,0,0,2,0,0,0,0,0

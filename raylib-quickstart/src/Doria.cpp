@@ -7,7 +7,7 @@
 Doria::Doria(Vector2 startPosition)
     : Enemy(startPosition), direction({ 1, 0 }), dropBombProbability(0.1f)
 {
-
+    id = 1;
 
 
 }
