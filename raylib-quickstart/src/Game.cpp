@@ -54,10 +54,17 @@ int enemyCounter = 0;
 
 bool playerWalking = false;
 
+double startTime = GetTime();
+double targetTime = 200.0;
+double elapsedTime;
+double remainingTime;
+
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     textureManager.LoadTextures();
     initialScreen = textureManager.GetTexture(8);
     arrowTexture = textureManager.GetTexture(9);
+    startTime = GetTime();
+    targetTime = 200.0;
 }
 
 void Game::Run() {
@@ -185,7 +192,9 @@ void Game::Update() {
             player.SetX(prevX);
         }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
             //MoverDerecha
-            CAMERA_OFFSET_X -= PLAYER_SPEED;
+            
+                CAMERA_OFFSET_X -= PLAYER_SPEED;
+            
             
         }
         CheckPowerUPCollision(player.GetBounds());
@@ -210,7 +219,9 @@ void Game::Update() {
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
             //MoverAbajo
-            CAMERA_OFFSET_Y -= PLAYER_SPEED;
+            if (GLOBAL_SCALE > 0.7f) {
+                CAMERA_OFFSET_Y -= PLAYER_SPEED;
+            }
         }
         CheckPowerUPCollision(player.GetBounds());
     }
@@ -222,7 +233,9 @@ void Game::Update() {
         }
         else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
             //MoverArriba
-            CAMERA_OFFSET_Y += PLAYER_SPEED;
+            if (GLOBAL_SCALE > 0.7f) {
+                CAMERA_OFFSET_Y += PLAYER_SPEED;
+            }
         }
         CheckPowerUPCollision(player.GetBounds());
     }
@@ -263,9 +276,10 @@ void Game::Update() {
     if (IsKeyPressed(KEY_Y)) {
         GameOver();
     }
-    if (IsKeyPressed(KEY_P)) {
-        playerScore += 100;
+    if (IsKeyDown(KEY_P)) {
+        playerScore += 100000;
     }
+    
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (auto it = blasts.begin(); it != blasts.end(); ) {
         it->Update(GetFrameTime()); 
@@ -318,6 +332,8 @@ void Game::Update() {
         ++it; 
     }
 
+    elapsedTime = GetTime() - startTime;
+    remainingTime = targetTime - elapsedTime;
 }
 
 void Game::Draw() {
@@ -330,7 +346,7 @@ void Game::Draw() {
     }
     else if(gameRunning){
         ClearBackground(DARKGREEN);
-        DrawRectangle(0 + CAMERA_OFFSET_X,0 + CAMERA_OFFSET_Y,4000,250, GRAY);
+        DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE,(0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE,4000,250 * GLOBAL_SCALE, GRAY);
         for (auto& wall : walls) wall.Draw();
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -347,11 +363,9 @@ void Game::Draw() {
 
 
         player.Draw();
-        DrawText(TextFormat("Player Pos: %d,%d", player.GetX(), player.GetY()), 600, 50, 40, WHITE);
-        DrawText(TextFormat("Speed: %d", PLAYER_SPEED - 3), 1200, 50, 40, WHITE);
-        DrawText(TextFormat("Range: %d", BOMB_RANGE), 1200, 90, 40, WHITE);
-        DrawText(TextFormat("Bombas: %d", MAX_BOMBS), 1200, 130, 40, WHITE);
-        DrawText(TextFormat("Blasts: %d", blasts.size()), 1200, 150, 40, WHITE);
+        DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
+        DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH/2 - 300, 80, 40, WHITE);
+        DrawText(TextFormat("LEFT %d", player.GetLife()), 1400, 80, 40, WHITE);
         DrawFPS(900, 150);
     }
     else if (inCredits) {
@@ -533,7 +547,7 @@ void Game::AddEnemy(Vector2 pos) {
     else {
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
         enemies.back()->SetTexture(textureManager.GetTexture(3));
-        enemies.back()->SetSpeed(0.5f);
+        enemies.back()->SetSpeed(0.6f);
     }
     enemyCounter++;
 }
@@ -550,8 +564,8 @@ int Game::CheckCollisions(Rectangle rec) {
 }
 
 void Game::CheckExitCollision() {
-    Rectangle p = {player.GetBounds().x, player.GetBounds().y, CELL_SIZE, CELL_SIZE};
-    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE, CELL_SIZE};
+    Rectangle p = {player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height};
+    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE - 20, CELL_SIZE - 20};
     if (CheckCollisionRecs(p, e)) {
         NextLevel();
     }
@@ -628,8 +642,11 @@ void Game::ShowStageScreen(const char* stageText) {
 
 void Game::NextLevel() {
     currentStage++;
-
     gameRunning = false;
+
+    startTime = GetTime();
+    targetTime = 200.0f;
+
     blasts.clear();
     bombs.clear();
     enemies.clear();

@@ -42,7 +42,7 @@ void Bomb::Draw() const {
     if (active) {
         Vector2 v = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y };
         Rectangle source = { SPRITE_SIZE, 0, SPRITE_SIZE, SPRITE_SIZE };
-        Rectangle dest = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y, SPRITE_SIZE * 6, SPRITE_SIZE * 6 };
+        Rectangle dest = { (x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
         Vector2 v2 = { 1, 1 };
 
         source.x = SPRITE_SIZE * currentFrame;

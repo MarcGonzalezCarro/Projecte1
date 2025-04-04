@@ -9,7 +9,7 @@ PowerUp::PowerUp(float x, float y) {
 void PowerUp::Draw() {
     Rectangle camera = {position.x + CAMERA_OFFSET_X,position.y + CAMERA_OFFSET_Y,CELL_SIZE,CELL_SIZE};
     Rectangle source = { SPRITE_SIZE * id, 0, SPRITE_SIZE, SPRITE_SIZE };
-    Rectangle dest = { position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y, SPRITE_SIZE * 6.3f, SPRITE_SIZE * 6.3f };
+    Rectangle dest = { (position.x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (position.y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
     Vector2 v2 = { 1, 1 };
 
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);

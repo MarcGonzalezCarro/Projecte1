@@ -5,6 +5,7 @@
 
 extern const int SCREEN_WIDTH;
 extern const int SCREEN_HEIGHT;
+extern const float GLOBAL_SCALE;
 extern const int CELL_SIZE;
 extern const int INITIAL_PLAYER_X;
 extern const int INITIAL_PLAYER_Y;

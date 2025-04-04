@@ -4,6 +4,7 @@
 // Definimos la constante global
 const int SCREEN_WIDTH = 1920;
 const int SCREEN_HEIGHT = 1080;
+const float GLOBAL_SCALE = 0.7f;
 const int CELL_SIZE = 100;
 const int INITIAL_PLAYER_X = 100;
 const int INITIAL_PLAYER_Y = 317;

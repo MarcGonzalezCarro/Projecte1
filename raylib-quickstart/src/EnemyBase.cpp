@@ -73,7 +73,7 @@ void Enemy::Draw() const {
     // Dibujar el enemigo 
     Vector2 v = { position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y };
     Rectangle source = { 0, 0, SPRITE_SIZE, SPRITE_SIZE };
-    Rectangle dest = { position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y, SPRITE_SIZE * 6, SPRITE_SIZE * 6 };
+    Rectangle dest = { (position.x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (position.y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
     Vector2 v2 = { 1, 1 };
     if (isDead == false) {
         if (direction.x == 1 && direction.y == 0) {
