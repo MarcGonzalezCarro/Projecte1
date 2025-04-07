@@ -11,14 +11,14 @@
 #include "Bomb.h"
 #include "Exit.h"
 #include "SaveGame.h"
-#include "TextureManager.h"
+#include "ResourceManager.h"
 #include <sstream>
 #include <string>
 #include <algorithm>
 
 
 
-TextureManager textureManager;
+ResourceManager resourceManager;
 Texture2D initialScreen;
 Texture2D arrowTexture;
 
@@ -53,6 +53,10 @@ std::vector<std::unique_ptr<PowerUp>> powerups;
 std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
 
+Music menuSong;
+Music gameSong;
+Music specialGameSong;
+
 int enemyCounter = 0;
 
 bool playerWalking = false;
@@ -76,21 +80,40 @@ int speedUpCounter = 0;
 ////////////////////////////
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
-    textureManager.LoadTextures();
-    initialScreen = textureManager.GetTexture(8);
-    arrowTexture = textureManager.GetTexture(9);
+    InitAudioDevice();
+    resourceManager.LoadTextures();
+    resourceManager.LoadMusic();
+    initialScreen = resourceManager.GetTexture(8);
+    arrowTexture = resourceManager.GetTexture(9);
+    menuSong = resourceManager.GetMusic(0);
+    gameSong = resourceManager.GetMusic(1);
+    specialGameSong = resourceManager.GetMusic(2);
     startTime = GetTime();
     targetTime = 200.0;
+    
 }
 
 void Game::Run() {
     
-    player.SetTexture(textureManager.GetTexture(0));
+    player.SetTexture(resourceManager.GetTexture(0));
     player.SetDirection({ 1, 0 });
 
     while (!WindowShouldClose()) {
+        ///////////////////////////////////////////////////////
+        //Menu
+        ///////////////////////////////////////////////////////
+
         if (startScreen) {
-            
+
+            if (!IsMusicStreamPlaying(menuSong)) {
+                StopMusicStream(gameSong);
+                PlayMusicStream(menuSong);
+                menuSong.looping = true;
+            }
+            else {
+                UpdateMusicStream(menuSong);
+            }
+
             if (IsKeyPressed(KEY_RIGHT)) {
                 menuChoice++;
                 if (menuChoice >= maxChoices) {
@@ -132,6 +155,23 @@ void Game::Run() {
             }
         }
         else if (gameRunning) {
+            if (!IsMusicStreamPlaying(gameSong) && !IsMusicStreamPlaying(specialGameSong)) {
+                StopMusicStream(menuSong);
+                if (powerUpsPicked == 0) {
+                    PlayMusicStream(gameSong);
+                    gameSong.looping = true;
+                }
+                else {
+                    PlayMusicStream(specialGameSong);
+                    specialGameSong.looping = true;
+                }                
+            }
+            else if(IsMusicStreamPlaying(gameSong)){
+                UpdateMusicStream(gameSong);
+            }
+            else if (IsMusicStreamPlaying(specialGameSong)) {
+                UpdateMusicStream(specialGameSong);
+            }
             Update();
         }
         else if (inCredits) {
@@ -230,68 +270,75 @@ void Game::Update() {
     onBomb = CheckCollisions(player.GetBounds()) == 3;
     playerWalking = false;
 
-    if (IsKeyDown(KEY_RIGHT)) { 
-        Vector2 v = { 1,0 };
-        player.Move(PLAYER_SPEED, 0, v);
-        playerWalking = true;
-        if (CheckCollisions(player.GetBounds()) != 0) {
-            player.SetX(prevX);
-        }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
-            //MoverDerecha
-            
+    if (!player.IsActive()) {
+        ResetStage();
+    }
+    if (!player.IsDead()) {
+        if (IsKeyDown(KEY_RIGHT)) {
+            Vector2 v = { 1,0 };
+            player.Move(PLAYER_SPEED, 0, v);
+            playerWalking = true;
+            if (CheckCollisions(player.GetBounds()) != 0) {
+                player.SetX(prevX);
+            }
+            else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
+                //MoverDerecha
+
                 CAMERA_OFFSET_X -= PLAYER_SPEED;
-            
-            
-        }
-        CheckPowerUPCollision(player.GetBounds());
-    }
-    if (IsKeyDown(KEY_LEFT)) { 
-        player.Move(-PLAYER_SPEED, 0, {-1, 0});
-        playerWalking = true;
-        if (CheckCollisions(player.GetBounds()) != 0) {
-            player.SetX(prevX);
-        }else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
-            //MoverIzquierda
-            
-            CAMERA_OFFSET_X += PLAYER_SPEED;
-        }
-        CheckPowerUPCollision(player.GetBounds());
-    }
-    if (IsKeyDown(KEY_DOWN)) { 
-        player.Move(0, PLAYER_SPEED, {0,-1});
-        playerWalking = true;
-        if (CheckCollisions(player.GetBounds()) != 0) {
-            player.SetY(prevY);
-        }
-        else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-            //MoverAbajo
-            if (GLOBAL_SCALE > 0.7f) {
-                CAMERA_OFFSET_Y -= PLAYER_SPEED;
+
+
             }
+
         }
-        CheckPowerUPCollision(player.GetBounds());
-    }
-    if (IsKeyDown(KEY_UP)) { 
-        player.Move(0, -PLAYER_SPEED, {0,1});
-        playerWalking = true;
-        if (CheckCollisions(player.GetBounds()) != 0) {
-            player.SetY(prevY);
-        }
-        else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-            //MoverArriba
-            if (GLOBAL_SCALE > 0.7f) {
-                CAMERA_OFFSET_Y += PLAYER_SPEED;
+        if (IsKeyDown(KEY_LEFT)) {
+            player.Move(-PLAYER_SPEED, 0, { -1, 0 });
+            playerWalking = true;
+            if (CheckCollisions(player.GetBounds()) != 0) {
+                player.SetX(prevX);
             }
+            else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
+                //MoverIzquierda
+
+                CAMERA_OFFSET_X += PLAYER_SPEED;
+            }
+
         }
-        CheckPowerUPCollision(player.GetBounds());
+        if (IsKeyDown(KEY_DOWN)) {
+            player.Move(0, PLAYER_SPEED, { 0,-1 });
+            playerWalking = true;
+            if (CheckCollisions(player.GetBounds()) != 0) {
+                player.SetY(prevY);
+            }
+            else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
+                //MoverAbajo
+                if (GLOBAL_SCALE > 0.7f) {
+                    CAMERA_OFFSET_Y -= PLAYER_SPEED;
+                }
+            }
+
+        }
+        if (IsKeyDown(KEY_UP)) {
+            player.Move(0, -PLAYER_SPEED, { 0,1 });
+            playerWalking = true;
+            if (CheckCollisions(player.GetBounds()) != 0) {
+                player.SetY(prevY);
+            }
+            else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
+                //MoverArriba
+                if (GLOBAL_SCALE > 0.7f) {
+                    CAMERA_OFFSET_Y += PLAYER_SPEED;
+                }
+            }
+
+        }
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckBlastDamage(playerPos)) {
         if (player.GetLife() <= 0) {
             GameOver();
         }
-        else {
-            ResetStage();
+        else if(!player.IsDead()){
+            player.Die();
         }
     }
     if (playerWalking) {
@@ -303,6 +350,9 @@ void Game::Update() {
     if (enemyCounter == 0) {
         CheckExitCollision();
     }
+
+    CheckPowerUPCollision(player.GetBounds());
+
     player.Update();
 
     if (IsKeyPressed(KEY_SPACE)) AddBomb();
@@ -419,8 +469,10 @@ void Game::Draw() {
             enemy->Draw(); 
         }
 
-
-        player.Draw();
+        if (player.IsActive()) {
+            player.Draw();
+        }
+        
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
         DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH/2 - 300, 80, 40, WHITE);
         DrawText(TextFormat("LEFT %d", player.GetLife()), 1400, 80, 40, WHITE);
@@ -503,7 +555,7 @@ void Game::AddWalls() {
             if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
                 if (i % 2 == 0 && j % 2 == 0) {
                     walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                    walls.back().SetTexture(textureManager.GetTexture(5));
+                    walls.back().SetTexture(resourceManager.GetTexture(5));
                 }
                 else if ((i <= 3 && j <= 3)) {
                     //Lugar SEguro
@@ -511,7 +563,7 @@ void Game::AddWalls() {
                 else{
                     if (GetRandomValue(1, 4) == 1){
                     softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                    softBlocks.back().SetTexture(textureManager.GetTexture(5));
+                    softBlocks.back().SetTexture(resourceManager.GetTexture(5));
                         if (GetRandomValue(1, 4) == 1) {
                             Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
                             AddEnemy(v);
@@ -522,14 +574,14 @@ void Game::AddWalls() {
             
             else {
                 walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                walls.back().SetTexture(textureManager.GetTexture(5));
+                walls.back().SetTexture(resourceManager.GetTexture(5));
             }
         }
         
     }
     int temp = GetRandomValue(0, softBlocks.size() - 1);
     exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
-    exits.back().SetTexture(textureManager.GetTexture(7));
+    exits.back().SetTexture(resourceManager.GetTexture(7));
     printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
 }
 
@@ -539,7 +591,7 @@ void Game::AddBomb() {
         
 
         bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
-        bombs.back()->SetTexture(textureManager.GetTexture(2));
+        bombs.back()->SetTexture(resourceManager.GetTexture(2));
 
         bombsPlanted++;
         
@@ -557,7 +609,7 @@ void Game::AddBlasts(Bomb bomb) {
     Vector2 bombPos = { bomb.GetX(), bomb.GetY() };
 
     blasts.push_back(Blast(bombPos));
-    blasts.back().SetTexture(textureManager.GetTexture(1));
+    blasts.back().SetTexture(resourceManager.GetTexture(1));
     blasts.back().direction = 4;
     
 
@@ -582,7 +634,7 @@ void Game::AddBlasts(Bomb bomb) {
 
             blasts.push_back(Blast(newPos));
             blasts.back().direction = temp;
-            blasts.back().SetTexture(textureManager.GetTexture(1));
+            blasts.back().SetTexture(resourceManager.GetTexture(1));
             if (temp2 == bomb.GetRange() - 1) {
                 blasts.back().SetFinal(true);
             }
@@ -610,15 +662,15 @@ bool Game::IsBlastBlocked(Vector2 position) {
                 int ran = std::rand() % 4;
                 if (ran == 1) {
                     powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
                 }
                 if (ran == 2) {
                     powerups.push_back(std::make_unique<BombUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
                 }
                 if (ran == 3) {
                     powerups.push_back(std::make_unique<FireUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(textureManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
                 }
                 
             }
@@ -635,11 +687,11 @@ void Game::AddEnemy(Vector2 pos) {
     int ran = std::rand() % 2;
     if (ran == 0) {
         enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
-        enemies.back()->SetTexture(textureManager.GetTexture(4));
+        enemies.back()->SetTexture(resourceManager.GetTexture(4));
     }
     else {
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
-        enemies.back()->SetTexture(textureManager.GetTexture(3));
+        enemies.back()->SetTexture(resourceManager.GetTexture(3));
         enemies.back()->SetSpeed(0.6f);
     }
     enemyCounter++;
@@ -717,6 +769,8 @@ void Game::ResetStage() {
     CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     player.DecreaseLife();
+    player.SetIsDead(false);
+    player.SetActive(true);
     AddWalls();
     //Empezar subrutina
     ShowStageScreen("Stage ");

@@ -1,11 +1,13 @@
 #include "Player.h"
 #include "Constants.h"
-#include "TextureManager.h"
+#include "ResourceManager.h"
 
 Player::Player(int startX, int startY) : x(startX), y(startY), life(3) {
     currentFrame = 0;
     framesCounter = 0;
     framesSpeed = 6;
+    isDead = false;
+    isActive = true;
 }
 
 Player::~Player() {
@@ -20,14 +22,18 @@ void Player::Move(int dx, int dy, Vector2 dir) {
 }
 
 void Player::Update() {
-    if (idle == false) {
+    
+    if (idle == false || isDead == true) {
         framesCounter++;
         if (framesCounter >= (60 / framesSpeed)) {
             framesCounter = 0;
             currentFrame++;
 
-            if (currentFrame > 3 || (prevdirection.x != newdirection.x || prevdirection.y != newdirection.y)) {
+            if ((currentFrame > 3 || (prevdirection.x != newdirection.x || prevdirection.y != newdirection.y)) && !isDead) {
                 currentFrame = 0;
+            }
+            else if (isDead && currentFrame > 6) {
+                isActive = false;
             }
         }
     }
@@ -35,6 +41,8 @@ void Player::Update() {
         currentFrame = 3;
     }
 }
+    
+
 
 void Player::Draw() const {
     Vector2 v = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y};
@@ -42,47 +50,54 @@ void Player::Draw() const {
     Rectangle dest = { (x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
     Vector2 v2 = { 1, 1 };
 
-    
-    if (newdirection.x == (float) 1 && newdirection.y == (float) 0) {
-        if (currentFrame != 3) {
-            source.x = SPRITE_SIZE * 6 + SPRITE_SIZE * currentFrame;
-        }
-        else {
-            source.x = SPRITE_SIZE * 6 + SPRITE_SIZE * 1;
-        }
-        
-        source.y = 0;
-        DrawTexturePro(texture, source, dest, v2, 0, WHITE);
-    }
-    else if (newdirection.x == (float) -1 && newdirection.y == (float) 0) {
-        if (currentFrame != 3) {
-            source.x = SPRITE_SIZE * currentFrame;
-        }
-        else {
-            source.x = SPRITE_SIZE * 1;
-        }
-        
-        source.y = 0;
-        DrawTexturePro(texture, source, dest, v2, 0, WHITE);
-    }else if (newdirection.x == (float) 0 && newdirection.y == (float) 1) {
-        if (currentFrame != 3) {
-            source.x = SPRITE_SIZE * 9 + SPRITE_SIZE * currentFrame;
-        }
-        else {
-            source.x = SPRITE_SIZE * 9 + SPRITE_SIZE * 1;
-        }
-        
-        source.y = 0;
-        DrawTexturePro(texture, source, dest, v2, 0, WHITE);
-    }else if (newdirection.x == (float) 0 && newdirection.y == (float) -1) {
-        if (currentFrame != 3) {
-            source.x = SPRITE_SIZE * 3 + SPRITE_SIZE * currentFrame;
+    if (!isDead) {
+        if (newdirection.x == (float)1 && newdirection.y == (float)0) {
+            if (currentFrame != 3) {
+                source.x = SPRITE_SIZE * 6 + SPRITE_SIZE * currentFrame;
+            }
+            else {
+                source.x = SPRITE_SIZE * 6 + SPRITE_SIZE * 1;
+            }
 
+            source.y = 0;
+            DrawTexturePro(texture, source, dest, v2, 0, WHITE);
         }
-        else {
-            source.x = SPRITE_SIZE * 3 + SPRITE_SIZE * 1;
+        else if (newdirection.x == (float)-1 && newdirection.y == (float)0) {
+            if (currentFrame != 3) {
+                source.x = SPRITE_SIZE * currentFrame;
+            }
+            else {
+                source.x = SPRITE_SIZE * 1;
+            }
+
+            source.y = 0;
+            DrawTexturePro(texture, source, dest, v2, 0, WHITE);
         }
-        source.y = 0;
+        else if (newdirection.x == (float)0 && newdirection.y == (float)1) {
+            if (currentFrame != 3) {
+                source.x = SPRITE_SIZE * 9 + SPRITE_SIZE * currentFrame;
+            }
+            else {
+                source.x = SPRITE_SIZE * 9 + SPRITE_SIZE * 1;
+            }
+
+            source.y = 0;
+            DrawTexturePro(texture, source, dest, v2, 0, WHITE);
+        }
+        else if (newdirection.x == (float)0 && newdirection.y == (float)-1) {
+            if (currentFrame != 3) {
+                source.x = SPRITE_SIZE * 3 + SPRITE_SIZE * currentFrame;
+
+            }
+            else {
+                source.x = SPRITE_SIZE * 3 + SPRITE_SIZE * 1;
+            }
+            source.y = 0;
+            DrawTexturePro(texture, source, dest, v2, 0, WHITE);
+        }
+    }
+    else {
+        source.x = SPRITE_SIZE * 12 + SPRITE_SIZE * currentFrame;
         DrawTexturePro(texture, source, dest, v2, 0, WHITE);
     }
     
@@ -129,4 +144,28 @@ int Player::GetLife() const {
 
 void Player::DecreaseLife() {
     if (life > 0) life--;
+}
+
+void Player::Die() {
+    isDead = true;
+    currentFrame = 0;
+    framesCounter = 0;
+}
+
+void Player::SetIsDead(bool status)
+{
+    isDead = status;
+}
+
+bool Player::IsActive() {
+    return isActive;
+}
+
+bool Player::IsDead()
+{
+    return isDead;
+}
+
+void Player::SetActive(bool status) {
+    isActive = status;
 }

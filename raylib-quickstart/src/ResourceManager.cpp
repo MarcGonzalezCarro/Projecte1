@@ -1,8 +1,8 @@
-#include "TextureManager.h"
+#include "ResourceManager.h"
 #include <stdexcept> // Para std::runtime_error
 
 // Constructor: Carga todas las texturas
-TextureManager::TextureManager() {
+ResourceManager::ResourceManager() {
 
     
     
@@ -10,7 +10,7 @@ TextureManager::TextureManager() {
 }
 
 // Obtener una textura por índice
-Texture2D TextureManager::GetTexture(size_t index) const {
+Texture2D ResourceManager::GetTexture(size_t index) const {
     if (index < textures.size()) {
         return textures[index];
     }
@@ -20,13 +20,13 @@ Texture2D TextureManager::GetTexture(size_t index) const {
 }
 
 // Destructor: Liberar todas las texturas
-TextureManager::~TextureManager() {
+ResourceManager::~ResourceManager() {
     for (Texture2D texture : textures) {
         UnloadTexture(texture);
     }
 }
 
-void TextureManager::LoadTextures() {
+void ResourceManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/BomberMan.png")); //0
     textures.push_back(LoadTexture("resources/Blast01.png")); //1
     textures.push_back(LoadTexture("resources/Bomb.png")); //2
@@ -39,4 +39,16 @@ void TextureManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/Exit.png")); //7
     textures.push_back(LoadTexture("resources/Bomberman-TitleScreen.png")); //8
     textures.push_back(LoadTexture("resources/Flecha.png")); //8
+}
+
+void ResourceManager::LoadMusic() {
+    musics.push_back(LoadMusicStream("resources/Title_Screen.mp3")); //0
+    musics.push_back(LoadMusicStream("resources/Main_BGM.mp3")); //1
+    musics.push_back(LoadMusicStream("resources/Power-Up_Get.mp3")); //2
+}
+
+Music ResourceManager::GetMusic(size_t index) {
+    if (index < musics.size()) {
+        return musics[index];
+    }
 }

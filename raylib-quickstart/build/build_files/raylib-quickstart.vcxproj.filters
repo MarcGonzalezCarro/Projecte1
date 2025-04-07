@@ -54,7 +54,7 @@
     <ClInclude Include="..\..\include\SpeedUp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\TextureManager.h">
+    <ClInclude Include="..\..\include\ResourceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Wall.h">
@@ -110,7 +110,7 @@
     <ClCompile Include="..\..\src\SpeedUp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\TextureManager.cpp">
+    <ClCompile Include="..\..\src\ResourceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Wall.cpp">

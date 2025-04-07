@@ -543,7 +543,7 @@
     <ClInclude Include="..\..\include\SaveGame.h" />
     <ClInclude Include="..\..\include\SoftBlock.h" />
     <ClInclude Include="..\..\include\SpeedUp.h" />
-    <ClInclude Include="..\..\include\TextureManager.h" />
+    <ClInclude Include="..\..\include\ResourceManager.h" />
     <ClInclude Include="..\..\include\Wall.h" />
     <ClInclude Include="..\..\include\resource_dir.h" />
   </ItemGroup>
@@ -563,7 +563,7 @@
     <ClCompile Include="..\..\src\SaveGame.cpp" />
     <ClCompile Include="..\..\src\SoftBlock.cpp" />
     <ClCompile Include="..\..\src\SpeedUp.cpp" />
-    <ClCompile Include="..\..\src\TextureManager.cpp" />
+    <ClCompile Include="..\..\src\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\Wall.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
   </ItemGroup>

@@ -7,6 +7,8 @@ class Player {
 private:
     int x, y;           // Posición del jugador
     int life;           // Cantidad de vidas
+    bool isDead;
+    bool isActive;
     int currentFrame;
     int framesCounter;
     int framesSpeed;
@@ -35,6 +37,11 @@ public:
     int GetY() const;
     int GetLife() const;
     void DecreaseLife();
+    void Die();
+    void SetIsDead(bool status);
+    bool IsActive();
+    bool IsDead();
+    void SetActive(bool status);
     
 };
 
