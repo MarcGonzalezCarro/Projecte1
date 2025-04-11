@@ -483,7 +483,7 @@ void Game::Draw() {
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
         DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH/2 - 300, 80, 40, WHITE);
         DrawText(TextFormat("LEFT %d", player.GetLife()), 1400, 80, 40, WHITE);
-        DrawFPS(900, 150);
+        DrawFPS(1200, 80);
     }
     else if (inCredits) {
         ClearBackground(BLACK);
