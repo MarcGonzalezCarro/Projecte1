@@ -487,9 +487,25 @@ void Game::Draw() {
     }
     else if (inCredits) {
         ClearBackground(BLACK);
-        DrawText("", 100,100,40,WHITE);
-        DrawText("Back", 140, 700, 40, WHITE);
-        DrawTextureEx(arrowTexture, { 100, 700 }, 0, 4, WHITE);
+        DrawText("Proyecto: Bomberman (NES)", 80, 60, 60, WHITE);
+        DrawText("Version clasica del iconico Bomberman de NES, donde el jugador debe colocar \nbombas estrategicamente para eliminar enemigos y abrirse paso a traves de un \nlaberinto de bloques. El objetivo es superar cada nivel utilizando logica,\nreflejos y planificacion, en una mezcla de accion y puzles retro.", 100, 150, 30, WHITE);
+        DrawText("Asignatura: Proyecto 1", 100, 270, 30, WHITE);
+        DrawText("Grado en Diseno y Desarrollo de Videojuegos", 100, 310, 30, WHITE);
+        DrawText("Universidad Politecnica de Catalunya", 100, 350, 30, WHITE);
+
+        DrawText("Equipo de Desarrollo:", 100, 410, 35, WHITE);
+        DrawText("- Marc Gonzalez", 120, 450, 30, WHITE);
+        DrawText("- Lluis Cazorla", 120, 490, 30, WHITE);
+        DrawText("- Santiago Alvarez", 120, 530, 30, WHITE);
+
+        DrawText("Tutores:", 100, 590, 35, WHITE);
+        DrawText("- Prof. Alejandro Paris", 120, 630, 30, WHITE);
+
+        DrawText("Mas Informacion:", 100, 690, 35, WHITE);
+        DrawText("GitHub: github.com/MarcGonzalezCarro/Projecte1", 120, 730, 30, WHITE);
+
+        DrawText("Back", 120, 840, 40, WHITE);
+        DrawTextureEx(arrowTexture, { 80, 840 }, 0, 4, WHITE);
     }
     else if (inTop) {
         ClearBackground(BLACK);
