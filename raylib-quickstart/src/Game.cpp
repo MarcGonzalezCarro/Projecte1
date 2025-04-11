@@ -333,6 +333,12 @@ void Game::Update() {
         }
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
+    if (CheckEnemyCollision()) {
+        if (!player.IsDead()) {
+            player.Die();
+        }
+    }
+
     if (CheckBlastDamage(playerPos)) {
         if (player.GetLife() <= 0) {
             GameOver();
@@ -421,6 +427,7 @@ void Game::Update() {
             default:
                 break;
             }
+            playerScore += (*it)->GetScore();
             it = enemies.erase(it); // Elimina el enemigo
             enemyCounter--;
         }
@@ -714,6 +721,16 @@ void Game::CheckExitCollision() {
     if (CheckCollisionRecs(p, e)) {
         NextLevel();
     }
+}
+
+bool Game::CheckEnemyCollision() {
+    Rectangle p = { player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height };
+
+    for (const auto& enemy : enemies) {
+        Rectangle e = { enemy->GetPosition().x, enemy->GetPosition().y, CELL_SIZE - 20, CELL_SIZE - 20};
+        if (CheckCollisionRecs(p, e)) return true;
+    }
+    return false;
 }
 
 void Game::CheckPowerUPCollision(Rectangle rec) {

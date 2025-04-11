@@ -17,6 +17,8 @@ public:
 
     Vector2 GetPosition() const; // Obtener la posición actual
     Vector2 GetDirection() const;
+    int GetScore();
+
     void SetPosition(Vector2 newPosition); // Establecer posición
 
     void SetRandomDirection();
@@ -38,6 +40,7 @@ protected:
     int currentFrame;
     int animFramesCounter;
     int framesSpeed;
+    int score;
 
     bool isDead;
     bool isActive;

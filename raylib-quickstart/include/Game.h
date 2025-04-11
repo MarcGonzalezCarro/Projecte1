@@ -38,6 +38,7 @@ public:
     void ShowStageScreen(const char* stageText);
     void CheckPowerUPCollision(Rectangle rec);
     void CheckExitCollision();
+    bool CheckEnemyCollision();
 };
 
 extern std::vector<Blast> blasts;

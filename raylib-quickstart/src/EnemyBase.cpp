@@ -104,6 +104,11 @@ Vector2 Enemy::GetDirection() const{
     return direction;
 }
 
+int Enemy::GetScore()
+{
+    return score;
+}
+
 void Enemy::SetPosition(Vector2 newPosition) {
     position = newPosition;
 }
