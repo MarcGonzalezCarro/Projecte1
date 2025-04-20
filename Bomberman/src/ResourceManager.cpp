@@ -45,10 +45,29 @@ void ResourceManager::LoadMusic() {
     musics.push_back(LoadMusicStream("resources/Title_Screen.mp3")); //0
     musics.push_back(LoadMusicStream("resources/Main_BGM.mp3")); //1
     musics.push_back(LoadMusicStream("resources/Power-Up_Get.mp3")); //2
+    musics.push_back(LoadMusicStream("resources/Stage.mp3")); //3
+    musics.push_back(LoadMusicStream("resources/Dead.mp3")); //4
+}
+
+void ResourceManager::LoadSounds() {
+    sounds.push_back(LoadSound("resources/Bomberman SFX (1).wav"));
+    sounds.push_back(LoadSound("resources/Bomberman SFX (2).wav"));
+    sounds.push_back(LoadSound("resources/Bomberman SFX (3).wav"));
+    sounds.push_back(LoadSound("resources/Bomberman SFX (4).wav"));
+    sounds.push_back(LoadSound("resources/Bomberman SFX (5).wav"));
+    sounds.push_back(LoadSound("resources/Bomberman SFX (6).wav"));
+    sounds.push_back(LoadSound("resources/Bomb Sound.mp3"));
 }
 
 Music ResourceManager::GetMusic(size_t index) {
     if (index < musics.size()) {
         return musics[index];
+    }
+}
+
+Sound ResourceManager::GetSound(size_t index)
+{
+    if (index < sounds.size()) {
+        return sounds[index];
     }
 }

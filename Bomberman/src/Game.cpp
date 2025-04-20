@@ -34,7 +34,7 @@ int topScoreChoice = 0;
 bool viewingScores = false;
 int maxChoices = 4;
 
-char playerName[50] = "";  // Buffer
+char playerName[6] = "";  // Buffer
 int nameLength = 0;
 int playerScore = 0;
 
@@ -83,6 +83,7 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
     InitAudioDevice();
     resourceManager.LoadTextures();
     resourceManager.LoadMusic();
+    resourceManager.LoadSounds();
     initialScreen = resourceManager.GetTexture(8);
     arrowTexture = resourceManager.GetTexture(9);
     menuSong = resourceManager.GetMusic(0);
@@ -271,13 +272,31 @@ void Game::Update() {
     playerWalking = false;
 
     if (!player.IsActive()) {
-        ResetStage();
+        float duration = 3.0f; // Duración en segundos
+        float timer = 0; // Temporizador para contar el tiempo transcurrido
+
+        SeekMusicStream(resourceManager.GetMusic(4), 0.0f);
+        PlayMusicStream(resourceManager.GetMusic(4));
+        while (timer < duration) {
+            UpdateMusicStream(resourceManager.GetMusic(4));
+            Draw();
+            timer += GetFrameTime();
+        }
+        if (player.GetLife() <= 0) {
+            GameOver();
+        }
+        else {
+            ResetStage();
+        }
     }
     if (!player.IsDead()) {
         if (IsKeyDown(KEY_RIGHT)) {
             Vector2 v = { 1,0 };
             player.Move(PLAYER_SPEED, 0, v);
             playerWalking = true;
+            if (!IsSoundPlaying(resourceManager.GetSound(0))) {
+                PlaySound(resourceManager.GetSound(0));
+            }
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
@@ -293,6 +312,9 @@ void Game::Update() {
         if (IsKeyDown(KEY_LEFT)) {
             player.Move(-PLAYER_SPEED, 0, { -1, 0 });
             playerWalking = true;
+            if (!IsSoundPlaying(resourceManager.GetSound(0))) {
+                PlaySound(resourceManager.GetSound(0));
+            }
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
@@ -306,6 +328,9 @@ void Game::Update() {
         if (IsKeyDown(KEY_DOWN)) {
             player.Move(0, PLAYER_SPEED, { 0,-1 });
             playerWalking = true;
+            if (!IsSoundPlaying(resourceManager.GetSound(1))) {
+                PlaySound(resourceManager.GetSound(1));
+            }
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
@@ -320,6 +345,9 @@ void Game::Update() {
         if (IsKeyDown(KEY_UP)) {
             player.Move(0, -PLAYER_SPEED, { 0,1 });
             playerWalking = true;
+            if (!IsSoundPlaying(resourceManager.GetSound(1))) {
+                PlaySound(resourceManager.GetSound(1));
+            }
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
@@ -335,15 +363,14 @@ void Game::Update() {
     Vector2 playerPos = {player.GetX(), player.GetY()};
     if (CheckEnemyCollision()) {
         if (!player.IsDead()) {
+            PlaySound(resourceManager.GetSound(4));
             player.Die();
         }
     }
 
     if (CheckBlastDamage(playerPos)) {
-        if (player.GetLife() <= 0) {
-            GameOver();
-        }
-        else if(!player.IsDead()){
+        if(!player.IsDead()){
+            PlaySound(resourceManager.GetSound(4));
             player.Die();
         }
     }
@@ -361,7 +388,10 @@ void Game::Update() {
 
     player.Update();
 
-    if (IsKeyPressed(KEY_SPACE)) AddBomb();
+    if (IsKeyPressed(KEY_SPACE)) { 
+        PlaySound(resourceManager.GetSound(2));
+        AddBomb(); 
+    }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Debug Mode
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -398,7 +428,7 @@ void Game::Update() {
         float temp = (*it)->Update(GetFrameTime());
         
         if (temp <= 0) {
-            
+            PlaySound(resourceManager.GetSound(6));
             AddBlasts(**it);
             delete* it;           
             it = bombs.erase(it); 
@@ -432,7 +462,9 @@ void Game::Update() {
             enemyCounter--;
         }
         else {
-            (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
+            if (remainingTime < 198.0) {
+                (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
+            }
             ++it; 
         }
     }
@@ -440,6 +472,7 @@ void Game::Update() {
         if (it->IsDestroyed()) {
             it->Update();
             if (!it->IsActive()) {
+                softBlocksDestroyed++;
                 it = softBlocks.erase(it); 
                 continue;
             }
@@ -555,10 +588,10 @@ void Game::Draw() {
     }
     else if (isDead) {
         ClearBackground(BLACK);
-        DrawText("Introduce Name:", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
+        DrawText("GAME OVER", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
 
         // Dibujar la línea de guiones bajos y reemplazarlos por las letras
-        for (int i = 0; i < 5; i++) // Mostrar un máximo de 20 caracteres
+        for (int i = 0; i < 5; i++) // Mostrar un máximo de 5 caracteres
         {
             if (i < nameLength)
                 DrawText(TextFormat("%c", playerName[i]), (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE);
@@ -811,12 +844,16 @@ void Game::ResetStage() {
 
 void Game::ShowStageScreen(const char* stageText) {
     // Establecer el tiempo objetivo: 2 segundos
-    const float duration = 2.0f; // Duración en segundos
+    const float duration = 3.0f; // Duración en segundos
     float timer = 0; // Temporizador para contar el tiempo transcurrido
-
+    
+    SeekMusicStream(resourceManager.GetMusic(3), 0.0f);
+    PlayMusicStream(resourceManager.GetMusic(3));
     while (timer < duration) {   // Mientras el tiempo transcurrido sea menor que 2 segundos
         BeginDrawing();
         ClearBackground(BLACK);
+
+        UpdateMusicStream(resourceManager.GetMusic(3));
 
         int screenWidth = GetScreenWidth();
         int screenHeight = GetScreenHeight();
@@ -824,7 +861,7 @@ void Game::ShowStageScreen(const char* stageText) {
         int textX = 750;
         int textY = screenHeight / 2;
 
-        if (timer > 0.2f && timer < 1.8f) {
+        if (timer > 0.2f && timer < 2.8f) {
             DrawText(TextFormat("%s %d", stageText, currentStage), textX, textY, 50, WHITE);
         }
         EndDrawing();

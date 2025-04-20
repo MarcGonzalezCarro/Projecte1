@@ -10,6 +10,7 @@ Enemy::Enemy(Vector2 startPosition)
     animFramesCounter = 0;
     framesSpeed = 6;
     isDead = false;
+    isActive = true;
 }
 
 Enemy::~Enemy() {}
