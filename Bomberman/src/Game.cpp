@@ -15,6 +15,7 @@
 #include <sstream>
 #include <string>
 #include <algorithm>
+#include <raymath.h>
 
 
 
@@ -306,13 +307,7 @@ void Game::Update() {
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
-            else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
-                //MoverDerecha
-
-                CAMERA_OFFSET_X -= PLAYER_SPEED;
-
-
-            }
+            
 
         }
         if (IsKeyDown(KEY_LEFT)) {
@@ -324,11 +319,7 @@ void Game::Update() {
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
-            else if (player.GetX() > CAMERA_BORDER_MIN_X && player.GetX() < CAMERA_BORDER_MAX_X) {
-                //MoverIzquierda
-
-                CAMERA_OFFSET_X += PLAYER_SPEED;
-            }
+            
 
         }
         if (IsKeyDown(KEY_DOWN)) {
@@ -340,12 +331,7 @@ void Game::Update() {
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
-            else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-                //MoverAbajo
-                if (GLOBAL_SCALE > 0.7f) {
-                    CAMERA_OFFSET_Y -= PLAYER_SPEED;
-                }
-            }
+            
 
         }
         if (IsKeyDown(KEY_UP)) {
@@ -357,12 +343,7 @@ void Game::Update() {
             if (CheckCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
-            else if (player.GetY() > CAMERA_BORDER_MIN_Y && player.GetY() < CAMERA_BORDER_MAX_Y) {
-                //MoverArriba
-                if (GLOBAL_SCALE > 0.7f) {
-                    CAMERA_OFFSET_Y += PLAYER_SPEED;
-                }
-            }
+            
 
         }
     }
@@ -433,13 +414,7 @@ void Game::Update() {
                 if (CheckCollisions(player2.GetBounds()) != 0) {
                     player2.SetX(prevX2);
                 }
-                else if (player2.GetX() > CAMERA_BORDER_MIN_X && player2.GetX() < CAMERA_BORDER_MAX_X) {
-                    //MoverDerecha
-
-                    //CAMERA_OFFSET_X -= PLAYER_SPEED;
-
-
-                }
+                
 
             }
             if (IsKeyDown(KEY_A)) {
@@ -451,11 +426,7 @@ void Game::Update() {
                 if (CheckCollisions(player2.GetBounds()) != 0) {
                     player2.SetX(prevX2);
                 }
-                else if (player2.GetX() > CAMERA_BORDER_MIN_X && player2.GetX() < CAMERA_BORDER_MAX_X) {
-                    //MoverIzquierda
-
-                    //CAMERA_OFFSET_X += PLAYER_SPEED;
-                }
+                
 
             }
             if (IsKeyDown(KEY_S)) {
@@ -467,12 +438,7 @@ void Game::Update() {
                 if (CheckCollisions(player2.GetBounds()) != 0) {
                     player2.SetY(prevY2);
                 }
-                else if (player2.GetY() > CAMERA_BORDER_MIN_Y && player2.GetY() < CAMERA_BORDER_MAX_Y) {
-                    //MoverAbajo
-                    if (GLOBAL_SCALE > 0.7f) {
-                        CAMERA_OFFSET_Y -= PLAYER_SPEED;
-                    }
-                }
+                
 
             }
             if (IsKeyDown(KEY_W)) {
@@ -484,12 +450,7 @@ void Game::Update() {
                 if (CheckCollisions(player2.GetBounds()) != 0) {
                     player2.SetY(prevY2);
                 }
-                else if (player2.GetY() > CAMERA_BORDER_MIN_Y && player2.GetY() < CAMERA_BORDER_MAX_Y) {
-                    //MoverArriba
-                    if (GLOBAL_SCALE > 0.7f) {
-                        CAMERA_OFFSET_Y += PLAYER_SPEED;
-                    }
-                }
+                
 
             }
         }
@@ -627,35 +588,73 @@ void Game::Draw() {
         DrawTextureEx(arrowTexture, { arrowPositions[menuChoice].x, arrowPositions[menuChoice].y}, 0, 4, WHITE);
     }
     else if(gameRunning){
+
+        // Cámara 1
+        Camera2D camera1 = { 0 };
+        Camera2D camera2 = { 0 };
+        Vector2 target1 = { player.GetBounds().x, player.GetBounds().y };
+
+        float halfW = (SCREEN_WIDTH / 2.0f) / camera1.zoom;
+        float halfH = (SCREEN_HEIGHT / 2.0f) / camera1.zoom;
+
+        target1.x = Clamp(target1.x, halfW, MAP_WIDTH);
+        target1.y = Clamp(target1.y, halfH, MAP_HEIGHT);
+
+        camera1.target = target1;
+        camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
+        camera1.zoom = 1.0f;
+
+        // Cámara 2
+        if (isCoop) {
+            
+            Vector2 target2 = { player.GetBounds().x, player.GetBounds().y };
+
+            target2.x = Clamp(target2.x, halfW, MAP_WIDTH - halfW);
+            target2.y = Clamp(target2.y, halfH, MAP_HEIGHT - halfH);
+
+            camera2.target = target2;
+            camera2.offset = { SCREEN_WIDTH * 3.0f / 4.0f, SCREEN_HEIGHT / 2.0f };
+            camera2.zoom = 1.0f;
+        
+        // Dibujo con cámara 1 (jugador 1)
+        BeginScissorMode(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado izquierdo
+        BeginMode2D(camera1);
         ClearBackground(DARKGREEN);
-        DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE,(0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE,4000,250 * GLOBAL_SCALE, GRAY);
+        DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE, (0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE, 4000, 250 * GLOBAL_SCALE, GRAY);
         for (auto& wall : walls) wall.Draw();
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
-        for (const auto& powerup : powerups) {
-            powerup->Draw(); 
-        }
+        for (const auto& powerup : powerups) powerup->Draw();
         for (auto& bomb : bombs) bomb->Draw();
-        for (auto& blast : blasts) {
-            blast.Draw();
-        }
-        for (const auto& enemy : enemies) {
-            enemy->Draw(); 
+        for (auto& blast : blasts) blast.Draw();
+        for (const auto& enemy : enemies) enemy->Draw();
+        if (player.IsActive()) player.Draw();
+        EndMode2D();
+        EndScissorMode();
+
+        // Dibujo con cámara 2 (jugador 2)
+        
+            BeginScissorMode(SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado derecho
+            BeginMode2D(camera2);
+            ClearBackground(DARKGREEN);
+            DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE, (0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE, 4000, 250 * GLOBAL_SCALE, GRAY);
+            for (auto& wall : walls) wall.Draw();
+            for (auto& exit : exits) exit.Draw();
+            for (auto& softBlock : softBlocks) softBlock.Draw();
+            for (const auto& powerup : powerups) powerup->Draw();
+            for (auto& bomb : bombs) bomb->Draw();
+            for (auto& blast : blasts) blast.Draw();
+            for (const auto& enemy : enemies) enemy->Draw();
+            if (player2.IsActive()) player2.Draw();
+            EndMode2D();
+            EndScissorMode();
         }
 
-        if (player.IsActive()) {
-            player.Draw();
-        }
-        if (isCoop) {
-            if (player2.IsActive()) {
-                player2.Draw();
-            }
-        }
-        
-        DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
-        DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH/2 - 300, 80, 40, WHITE);
-        DrawText(TextFormat("LEFT %d", player.GetLife()), 1400, 80, 40, WHITE);
-        DrawFPS(1200, 80);
+        // HUD común (fuera de las cámaras)
+        DrawText(TextFormat("TIME %.0f", remainingTime), 30, 20, 40, WHITE);
+        DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH / 2 - 100, 20, 40, WHITE);
+        DrawText(TextFormat("LEFT %d", player.GetLife()), SCREEN_WIDTH - 200, 20, 40, WHITE);
+        DrawFPS(20, SCREEN_HEIGHT - 30);
     }
     else if (inCredits) {
         ClearBackground(BLACK);

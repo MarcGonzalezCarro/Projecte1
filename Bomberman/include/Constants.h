@@ -9,6 +9,8 @@ extern const float GLOBAL_SCALE;
 extern const int CELL_SIZE;
 extern const int INITIAL_PLAYER_X;
 extern const int INITIAL_PLAYER_Y;
+extern const int MAP_WIDTH;
+extern const int MAP_HEIGHT;
 extern const int CAMERA_BORDER_MAX_X;
 extern const int CAMERA_BORDER_MIN_X;
 extern const int CAMERA_BORDER_MAX_Y;
