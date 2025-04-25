@@ -4,7 +4,7 @@
 #include "Constants.h"
 
 Enemy::Enemy(Vector2 startPosition)
-    : position(startPosition), speed(1.0f), distance(100), direction({ 1,0 }), framecounter(120)// Velocidad predeterminada
+    : position(startPosition), speed(1.0f), distance(100), direction({ 0,0 }), framecounter(120)// Velocidad predeterminada
 {
     currentFrame = 0;
     animFramesCounter = 0;
@@ -18,6 +18,9 @@ Enemy::~Enemy() {}
 void Enemy::Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
     if (!isDead) {
         framecounter -= deltaTime;
+        if (direction.x == 0 && direction.y == 0) {
+            framecounter = 0;
+        }
         if (framecounter <= 0) {
             bool validDirection = false;
             int attempts = 0;

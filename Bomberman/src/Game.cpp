@@ -462,9 +462,8 @@ void Game::Update() {
             enemyCounter--;
         }
         else {
-            if (remainingTime < 198.0) {
-                (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
-            }
+            
+            (*it)->Update(GetFrameTime(), walls, softBlocks); // Actualiza si todavía está activo
             ++it; 
         }
     }
@@ -618,11 +617,13 @@ void Game::AddWalls() {
                 }
                 else{
                     if (GetRandomValue(1, 4) == 1){
-                    softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                    softBlocks.back().SetTexture(resourceManager.GetTexture(5));
                         if (GetRandomValue(1, 4) == 1) {
                             Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
                             AddEnemy(v);
+                        }
+                        else {
+                            softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                            softBlocks.back().SetTexture(resourceManager.GetTexture(5));
                         }
                     }
                 }
@@ -646,7 +647,7 @@ void Game::AddBomb() {
     if (bombs.size() < MAX_BOMBS) {
         
 
-        bombs.push_back(new Bomb(((player.GetX() / CELL_SIZE) * CELL_SIZE), ((player.GetY() / CELL_SIZE) * CELL_SIZE) + 15));
+        bombs.push_back(new Bomb((((player.GetX() + 25) / CELL_SIZE) * CELL_SIZE), (((player.GetY() +25)/ CELL_SIZE) * CELL_SIZE) + 15));
         bombs.back()->SetTexture(resourceManager.GetTexture(2));
 
         bombsPlanted++;
@@ -825,6 +826,8 @@ bool Game::CheckBlastDamage(Vector2 pos) {
 
 void Game::ResetStage() {
     gameRunning = false;
+    startTime = GetTime();
+    targetTime = 200.0f;
     blasts.clear();
     bombs.clear();
     enemies.clear();
@@ -840,6 +843,8 @@ void Game::ResetStage() {
     AddWalls();
     //Empezar subrutina
     ShowStageScreen("Stage ");
+    startTime = GetTime();
+    targetTime = 200.0f;
 }
 
 void Game::ShowStageScreen(const char* stageText) {
@@ -847,8 +852,9 @@ void Game::ShowStageScreen(const char* stageText) {
     const float duration = 3.0f; // Duración en segundos
     float timer = 0; // Temporizador para contar el tiempo transcurrido
     
-    SeekMusicStream(resourceManager.GetMusic(3), 0.0f);
+    StopMusicStream(resourceManager.GetMusic(3));
     PlayMusicStream(resourceManager.GetMusic(3));
+
     while (timer < duration) {   // Mientras el tiempo transcurrido sea menor que 2 segundos
         BeginDrawing();
         ClearBackground(BLACK);
@@ -875,8 +881,7 @@ void Game::NextLevel() {
     currentStage++;
     gameRunning = false;
 
-    startTime = GetTime();
-    targetTime = 200.0f;
+    
 
     blasts.clear();
     bombs.clear();
@@ -890,6 +895,8 @@ void Game::NextLevel() {
     AddWalls();
     //Empezar subrutina
     ShowStageScreen("Stage ");
+    startTime = GetTime();
+    targetTime = 200.0f;
 }
 
 void Game::GameOver() {
