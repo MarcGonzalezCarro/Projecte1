@@ -54,9 +54,9 @@ void Blast::Draw() {
     if (!active) return;
 
     for (auto& tile : affectedTiles) {
-        Vector2 v = {position.x + CAMERA_OFFSET_X, position.y + CAMERA_OFFSET_Y};
+        Vector2 v = {position.x, position.y};
         Rectangle source = { 0, 0, SPRITE_SIZE, SPRITE_SIZE };
-        Rectangle dest = { (position.x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (position.y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
+        Rectangle dest = { (position.x) , (position.y) , SPRITE_SIZE * 6.3f , SPRITE_SIZE * 6.3f  };
         Vector2 v2 = { 1, 1 };
         
         if (direction == 0) {

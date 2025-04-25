@@ -592,35 +592,54 @@ void Game::Draw() {
         // Cámara 1
         Camera2D camera1 = { 0 };
         Camera2D camera2 = { 0 };
-        Vector2 target1 = { player.GetBounds().x, player.GetBounds().y };
+        Vector2 target1 = { player.GetBounds().x, SCREEN_HEIGHT/2 + 200};
 
-        float halfW = (SCREEN_WIDTH / 2.0f) / camera1.zoom;
-        float halfH = (SCREEN_HEIGHT / 2.0f) / camera1.zoom;
+        if (!isCoop) {
+            camera1.zoom = 0.7f;
 
-        target1.x = Clamp(target1.x, halfW, MAP_WIDTH);
-        target1.y = Clamp(target1.y, halfH, MAP_HEIGHT);
+            target1.x = Clamp(target1.x, 700, 1025);
 
-        camera1.target = target1;
-        camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
-        camera1.zoom = 1.0f;
+            camera1.target = target1;
+            camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
 
+            BeginMode2D(camera1);
+            ClearBackground(DARKGREEN);
+            DrawRectangle(0, 0, 4000, 250, GRAY);
+            for (auto& wall : walls) wall.Draw();
+            for (auto& exit : exits) exit.Draw();
+            for (auto& softBlock : softBlocks) softBlock.Draw();
+            for (const auto& powerup : powerups) powerup->Draw();
+            for (auto& bomb : bombs) bomb->Draw();
+            for (auto& blast : blasts) blast.Draw();
+            for (const auto& enemy : enemies) enemy->Draw();
+            if (player.IsActive()) player.Draw();
+            EndMode2D();
+        }else{
         // Cámara 2
-        if (isCoop) {
-            
-            Vector2 target2 = { player.GetBounds().x, player.GetBounds().y };
 
-            target2.x = Clamp(target2.x, halfW, MAP_WIDTH - halfW);
-            target2.y = Clamp(target2.y, halfH, MAP_HEIGHT - halfH);
+            camera1.zoom = 0.7f;
+
+            target1.x = Clamp(target1.x, 700, 2400);
+
+            camera1.target = target1;
+            camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
+
+            Vector2 target2 = { player2.GetBounds().x, SCREEN_HEIGHT / 2 + 200 };
+
+            camera2.zoom = 0.7f;
+
+            
+            target2.x = Clamp(target2.x, 700, 2400);
 
             camera2.target = target2;
             camera2.offset = { SCREEN_WIDTH * 3.0f / 4.0f, SCREEN_HEIGHT / 2.0f };
-            camera2.zoom = 1.0f;
+            
         
         // Dibujo con cámara 1 (jugador 1)
         BeginScissorMode(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado izquierdo
         BeginMode2D(camera1);
         ClearBackground(DARKGREEN);
-        DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE, (0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE, 4000, 250 * GLOBAL_SCALE, GRAY);
+        DrawRectangle((0) , (0), 4000, 250 , GRAY);
         for (auto& wall : walls) wall.Draw();
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -629,6 +648,7 @@ void Game::Draw() {
         for (auto& blast : blasts) blast.Draw();
         for (const auto& enemy : enemies) enemy->Draw();
         if (player.IsActive()) player.Draw();
+        if (player2.IsActive()) player2.Draw();
         EndMode2D();
         EndScissorMode();
 
@@ -637,7 +657,7 @@ void Game::Draw() {
             BeginScissorMode(SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado derecho
             BeginMode2D(camera2);
             ClearBackground(DARKGREEN);
-            DrawRectangle((0 + CAMERA_OFFSET_X) * GLOBAL_SCALE, (0 + CAMERA_OFFSET_Y) * GLOBAL_SCALE, 4000, 250 * GLOBAL_SCALE, GRAY);
+            DrawRectangle(0, 0, 4000, 250 , GRAY);
             for (auto& wall : walls) wall.Draw();
             for (auto& exit : exits) exit.Draw();
             for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -645,11 +665,14 @@ void Game::Draw() {
             for (auto& bomb : bombs) bomb->Draw();
             for (auto& blast : blasts) blast.Draw();
             for (const auto& enemy : enemies) enemy->Draw();
+            if (player.IsActive()) player.Draw();
             if (player2.IsActive()) player2.Draw();
             EndMode2D();
             EndScissorMode();
         }
-
+        if (isCoop) {
+            DrawRectangle(SCREEN_WIDTH / 2 - 2, 0, 4, SCREEN_HEIGHT, BLACK);
+        }
         // HUD común (fuera de las cámaras)
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 20, 40, WHITE);
         DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH / 2 - 100, 20, 40, WHITE);
@@ -973,8 +996,6 @@ void Game::ResetStage() {
     exits.clear();
     powerups.clear();
     enemyCounter = 0;
-    CAMERA_OFFSET_X = 0;
-    CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     player.DecreaseLife();
     player.SetIsDead(false);
@@ -1034,8 +1055,6 @@ void Game::NextLevel() {
     exits.clear();
     powerups.clear();
     enemyCounter = 0;
-    CAMERA_OFFSET_X = 0;
-    CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     if (isCoop) {
         player2.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);

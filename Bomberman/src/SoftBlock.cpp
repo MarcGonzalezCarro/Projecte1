@@ -17,9 +17,9 @@ void SoftBlock::Destroy() {
 
 void SoftBlock::Draw() {
     if (isActive) {
-        Rectangle rec = { position.x + CAMERA_OFFSET_X , position.y + CAMERA_OFFSET_Y, position.width, position.height };
+        Rectangle rec = { position.x , position.y, position.width, position.height };
         Rectangle source = { SPRITE_SIZE + SPRITE_SIZE * currentFrame, 0, SPRITE_SIZE, SPRITE_SIZE };
-        Rectangle dest = { (position.x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (position.y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
+        Rectangle dest = { (position.x ), (position.y) , SPRITE_SIZE * 6.3f , SPRITE_SIZE * 6.3f };
         Vector2 v2 = { 1, 1 };
 
         DrawTexturePro(texture, source, dest, v2, 0, WHITE);

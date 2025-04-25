@@ -40,9 +40,9 @@ void Bomb::Explode() {
 void Bomb::Draw() const {
     
     if (active) {
-        Vector2 v = { x + CAMERA_OFFSET_X, y + CAMERA_OFFSET_Y };
+        Vector2 v = { x, y };
         Rectangle source = { SPRITE_SIZE, 0, SPRITE_SIZE, SPRITE_SIZE };
-        Rectangle dest = { (x + CAMERA_OFFSET_X) * GLOBAL_SCALE, (y + CAMERA_OFFSET_Y) * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE, SPRITE_SIZE * 6.3f * GLOBAL_SCALE };
+        Rectangle dest = { (x ) , (y) , SPRITE_SIZE * 6.3f , SPRITE_SIZE * 6.3f};
         Vector2 v2 = { 1, 1 };
 
         source.x = SPRITE_SIZE * currentFrame;
