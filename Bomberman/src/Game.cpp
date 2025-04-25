@@ -60,6 +60,8 @@ Music specialGameSong;
 int enemyCounter = 0;
 
 bool playerWalking = false;
+bool playerWalking2 = false;
+bool isCoop = false;
 
 double startTime = GetTime();
 double targetTime = 200.0;
@@ -79,7 +81,7 @@ int bombUpCounter = 0;
 int speedUpCounter = 0;
 ////////////////////////////
 
-Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), onBomb(false) {
+Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYER_X,INITIAL_PLAYER_Y), onBomb(false) {
     InitAudioDevice();
     resourceManager.LoadTextures();
     resourceManager.LoadMusic();
@@ -98,6 +100,8 @@ void Game::Run() {
     
     player.SetTexture(resourceManager.GetTexture(0));
     player.SetDirection({ 1, 0 });
+    player2.SetTexture(resourceManager.GetTexture(0));
+    player2.SetDirection({ 1, 0 });
 
     while (!WindowShouldClose()) {
         ///////////////////////////////////////////////////////
@@ -139,6 +143,7 @@ void Game::Run() {
                 case 1:
                     printf("Aqui seria el continue");
                     startScreen = false;
+                    isCoop = true;
                     ResetStage();
                     break;
                 case 2:
@@ -269,6 +274,7 @@ void Game::Update() {
     int prevX = player.GetX();
     int prevY = player.GetY();
     onBomb = CheckCollisions(player.GetBounds()) == 3;
+
     playerWalking = false;
 
     if (!player.IsActive()) {
@@ -361,7 +367,7 @@ void Game::Update() {
         }
     }
     Vector2 playerPos = {player.GetX(), player.GetY()};
-    if (CheckEnemyCollision()) {
+    if (CheckEnemyCollision(playerPos.x, playerPos.y)) {
         if (!player.IsDead()) {
             PlaySound(resourceManager.GetSound(4));
             player.Die();
@@ -388,10 +394,139 @@ void Game::Update() {
 
     player.Update();
 
-    if (IsKeyPressed(KEY_SPACE)) { 
+    if (IsKeyPressed(KEY_ENTER)) { 
         PlaySound(resourceManager.GetSound(2));
-        AddBomb(); 
+        AddBomb(player.GetBounds().x, player.GetBounds().y); 
     }
+
+    if (isCoop) {
+        int prevX2 = player2.GetX();
+        int prevY2 = player2.GetY();
+        playerWalking2 = false;
+
+        if (!player2.IsActive()) {
+            float duration = 3.0f; // Duración en segundos
+            float timer = 0; // Temporizador para contar el tiempo transcurrido
+
+            SeekMusicStream(resourceManager.GetMusic(4), 0.0f);
+            PlayMusicStream(resourceManager.GetMusic(4));
+            while (timer < duration) {
+                UpdateMusicStream(resourceManager.GetMusic(4));
+                Draw();
+                timer += GetFrameTime();
+            }
+            if (player2.GetLife() <= 0) {
+                GameOver();
+            }
+            else {
+                ResetStage();
+            }
+        }
+        if (!player2.IsDead()) {
+            if (IsKeyDown(KEY_D)) {
+                Vector2 v = { 1,0 };
+                player2.Move(PLAYER_SPEED, 0, v);
+                playerWalking2 = true;
+                if (!IsSoundPlaying(resourceManager.GetSound(0))) {
+                    PlaySound(resourceManager.GetSound(0));
+                }
+                if (CheckCollisions(player2.GetBounds()) != 0) {
+                    player2.SetX(prevX2);
+                }
+                else if (player2.GetX() > CAMERA_BORDER_MIN_X && player2.GetX() < CAMERA_BORDER_MAX_X) {
+                    //MoverDerecha
+
+                    //CAMERA_OFFSET_X -= PLAYER_SPEED;
+
+
+                }
+
+            }
+            if (IsKeyDown(KEY_A)) {
+                player2.Move(-PLAYER_SPEED, 0, { -1, 0 });
+                playerWalking2 = true;
+                if (!IsSoundPlaying(resourceManager.GetSound(0))) {
+                    PlaySound(resourceManager.GetSound(0));
+                }
+                if (CheckCollisions(player2.GetBounds()) != 0) {
+                    player2.SetX(prevX2);
+                }
+                else if (player2.GetX() > CAMERA_BORDER_MIN_X && player2.GetX() < CAMERA_BORDER_MAX_X) {
+                    //MoverIzquierda
+
+                    //CAMERA_OFFSET_X += PLAYER_SPEED;
+                }
+
+            }
+            if (IsKeyDown(KEY_S)) {
+                player2.Move(0, PLAYER_SPEED, { 0,-1 });
+                playerWalking2 = true;
+                if (!IsSoundPlaying(resourceManager.GetSound(1))) {
+                    PlaySound(resourceManager.GetSound(1));
+                }
+                if (CheckCollisions(player2.GetBounds()) != 0) {
+                    player2.SetY(prevY2);
+                }
+                else if (player2.GetY() > CAMERA_BORDER_MIN_Y && player2.GetY() < CAMERA_BORDER_MAX_Y) {
+                    //MoverAbajo
+                    if (GLOBAL_SCALE > 0.7f) {
+                        CAMERA_OFFSET_Y -= PLAYER_SPEED;
+                    }
+                }
+
+            }
+            if (IsKeyDown(KEY_W)) {
+                player2.Move(0, -PLAYER_SPEED, { 0,1 });
+                playerWalking2 = true;
+                if (!IsSoundPlaying(resourceManager.GetSound(1))) {
+                    PlaySound(resourceManager.GetSound(1));
+                }
+                if (CheckCollisions(player2.GetBounds()) != 0) {
+                    player2.SetY(prevY2);
+                }
+                else if (player2.GetY() > CAMERA_BORDER_MIN_Y && player2.GetY() < CAMERA_BORDER_MAX_Y) {
+                    //MoverArriba
+                    if (GLOBAL_SCALE > 0.7f) {
+                        CAMERA_OFFSET_Y += PLAYER_SPEED;
+                    }
+                }
+
+            }
+        }
+        Vector2 playerPos2 = { player2.GetX(), player2.GetY() };
+        if (CheckEnemyCollision(playerPos2.x, playerPos2.y)) {
+            if (!player2.IsDead()) {
+                PlaySound(resourceManager.GetSound(4));
+                player2.Die();
+            }
+        }
+
+        if (CheckBlastDamage(playerPos2)) {
+            if (!player2.IsDead()) {
+                PlaySound(resourceManager.GetSound(4));
+                player2.Die();
+            }
+        }
+        if (playerWalking2) {
+            player2.SetIdle(false);
+        }
+        else {
+            player2.SetIdle(true);
+        }
+        if (enemyCounter == 0) {
+            CheckExitCollision();
+        }
+
+        CheckPowerUPCollision(player2.GetBounds());
+
+        player2.Update();
+
+        if (IsKeyPressed(KEY_SPACE)) {
+            PlaySound(resourceManager.GetSound(2));
+            AddBomb(player2.GetBounds().x, player2.GetBounds().y);
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Debug Mode
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -510,6 +645,11 @@ void Game::Draw() {
 
         if (player.IsActive()) {
             player.Draw();
+        }
+        if (isCoop) {
+            if (player2.IsActive()) {
+                player2.Draw();
+            }
         }
         
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
@@ -642,12 +782,12 @@ void Game::AddWalls() {
     printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
 }
 
-void Game::AddBomb() {
+void Game::AddBomb(float x, float y) {
     
     if (bombs.size() < MAX_BOMBS) {
         
 
-        bombs.push_back(new Bomb((((player.GetX() + 25) / CELL_SIZE) * CELL_SIZE), (((player.GetY() +25)/ CELL_SIZE) * CELL_SIZE) + 15));
+        bombs.push_back(new Bomb((((int)(x) / CELL_SIZE) * CELL_SIZE), (((int)(y)/ CELL_SIZE) * CELL_SIZE) + 15));
         bombs.back()->SetTexture(resourceManager.GetTexture(2));
 
         bombsPlanted++;
@@ -773,8 +913,8 @@ void Game::CheckExitCollision() {
     }
 }
 
-bool Game::CheckEnemyCollision() {
-    Rectangle p = { player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height };
+bool Game::CheckEnemyCollision(float x, float y) {
+    Rectangle p = { x, y, player.GetBounds().width, player.GetBounds().height };
 
     for (const auto& enemy : enemies) {
         Rectangle e = { enemy->GetPosition().x, enemy->GetPosition().y, CELL_SIZE - 20, CELL_SIZE - 20};
@@ -840,6 +980,12 @@ void Game::ResetStage() {
     player.DecreaseLife();
     player.SetIsDead(false);
     player.SetActive(true);
+    if (isCoop) {
+        player2.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+        player2.DecreaseLife();
+        player2.SetIsDead(false);
+        player2.SetActive(true);
+    }
     AddWalls();
     //Empezar subrutina
     ShowStageScreen("Stage ");
@@ -892,6 +1038,9 @@ void Game::NextLevel() {
     CAMERA_OFFSET_X = 0;
     CAMERA_OFFSET_Y = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    if (isCoop) {
+        player2.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    }
     AddWalls();
     //Empezar subrutina
     ShowStageScreen("Stage ");

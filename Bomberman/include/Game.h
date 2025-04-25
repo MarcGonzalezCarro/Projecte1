@@ -12,6 +12,7 @@
 class Game {
 private:
     Player player;
+    Player player2;
     std::vector<Wall> walls;
     std::vector<SoftBlock> softBlocks;
     std::vector<Bomb*> bombs;
@@ -25,7 +26,7 @@ public:
     void Update();
     void Draw();
     void AddWalls();
-    void AddBomb();
+    void AddBomb(float x, float y);
     void AddEnemy(Vector2 pos);
     void AddBlasts(Bomb bomb);
     void ExplodeBombs();
@@ -38,7 +39,7 @@ public:
     void ShowStageScreen(const char* stageText);
     void CheckPowerUPCollision(Rectangle rec);
     void CheckExitCollision();
-    bool CheckEnemyCollision();
+    bool CheckEnemyCollision(float x, float y);
 };
 
 extern std::vector<Blast> blasts;
