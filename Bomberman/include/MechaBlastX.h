@@ -12,7 +12,8 @@ public:
     MechaBlastX(Vector2 startPosition); // Constructor
     int id;
     virtual ~MechaBlastX(); // Destructor virtual para herencia
-
+    void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks) override;
+    void Draw() const override;
 protected:
     
 };
