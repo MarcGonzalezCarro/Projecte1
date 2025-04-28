@@ -1,14 +1,14 @@
-#ifndef BALLOM_H
-#define BALLOM_H
+#pragma once
+#ifndef ONIL_H
+#define ONIL_H
 
 #include "EnemyBase.h"
 
-class Ballom : public Enemy {
+class Onil : public Enemy {
 public:
-    Ballom(Vector2 startPosition);
-    ~Ballom() override;
+    Onil(Vector2 startPosition);
+    ~Onil() override;
 
-    
 
 private:
     Vector2 direction; // Dirección de movimiento

@@ -13,8 +13,3 @@ Ballom::Ballom(Vector2 startPosition)
 }
 
 Ballom::~Ballom() {}
-
-
-void Ballom::DropBomb() {
-    
-}

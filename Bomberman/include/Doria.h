@@ -14,6 +14,5 @@ public:
 private:
     Vector2 direction; // Dirección de movimiento
     float dropBombProbability; // Probabilidad de dejar una bomba
-    void DropBomb(); // Función para dejar una bomba
 };
 #endif

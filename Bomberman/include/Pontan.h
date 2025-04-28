@@ -1,14 +1,15 @@
-#ifndef BALLOM_H
-#define BALLOM_H
+#pragma once
+#ifndef PONTAN_H
+#define PONTAN_H
 
 #include "EnemyBase.h"
 
-class Ballom : public Enemy {
+class Pontan : public Enemy {
 public:
-    Ballom(Vector2 startPosition);
-    ~Ballom() override;
+    Pontan(Vector2 startPosition);
+    ~Pontan() override;
 
-    
+
 
 private:
     Vector2 direction; // Dirección de movimiento

@@ -28,17 +28,26 @@ ResourceManager::~ResourceManager() {
 
 void ResourceManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/BomberMan.png")); //0
-    textures.push_back(LoadTexture("resources/Blast01.png")); //1
-    textures.push_back(LoadTexture("resources/Bomb.png")); //2
-    textures.push_back(LoadTexture("resources/Doria.png")); //
+    textures.push_back(LoadTexture("resources/BomberMan2.png")); //1
+    textures.push_back(LoadTexture("resources/Blast01.png")); //2
+    textures.push_back(LoadTexture("resources/Bomb.png")); //3
     
-    textures.push_back(LoadTexture("resources/Ballom.png")); //
+    textures.push_back(LoadTexture("resources/Ballom.png")); //4
+    textures.push_back(LoadTexture("resources/Onil.png")); //5
+    textures.push_back(LoadTexture("resources/Dahl.png")); //6
+    textures.push_back(LoadTexture("resources/Minvo.png")); //7
+    textures.push_back(LoadTexture("resources/Doria.png")); //8
+    textures.push_back(LoadTexture("resources/Ovape.png")); //9
+    textures.push_back(LoadTexture("resources/Pass.png")); //10
+    textures.push_back(LoadTexture("resources/Pontan.png")); //11
     
-    textures.push_back(LoadTexture("resources/Wall.png")); //5
-    textures.push_back(LoadTexture("resources/PowerUps.png")); //6
-    textures.push_back(LoadTexture("resources/Exit.png")); //7
-    textures.push_back(LoadTexture("resources/Bomberman-TitleScreen.png")); //8
-    textures.push_back(LoadTexture("resources/Flecha.png")); //8
+    
+    
+    textures.push_back(LoadTexture("resources/Wall.png")); //12
+    textures.push_back(LoadTexture("resources/PowerUps.png")); //13
+    textures.push_back(LoadTexture("resources/Exit.png")); //14
+    textures.push_back(LoadTexture("resources/Bomberman-TitleScreen.png")); //15
+    textures.push_back(LoadTexture("resources/Flecha.png")); //16
 }
 
 void ResourceManager::LoadMusic() {

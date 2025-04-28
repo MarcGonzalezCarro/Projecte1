@@ -3,7 +3,13 @@
 #include <iostream>
 #include "Blast.h"
 #include "Ballom.h"
+#include "Onil.h"
+#include "Dahl.h"
+#include "Minvo.h"
 #include "Doria.h"
+#include "Ovape.h"
+#include "Pass.h"
+#include "Pontan.h"
 #include "PowerUp.h"
 #include "BombUp.h"
 #include "FireUp.h"
@@ -73,7 +79,13 @@ double remainingTime;
 //FOR STATS
 ////////////////////////////
 int ballomKills = 0;
+int onilKills = 0;
+int dahlKills = 0;
+int minvoKills = 0;
 int doriaKills = 0;
+int ovapeKills = 0;
+int passKills = 0;
+int pontanKills = 0;
 int bombsPlanted = 0;
 int softBlocksDestroyed = 0;
 int powerUpsPicked = 0;
@@ -87,8 +99,8 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     resourceManager.LoadTextures();
     resourceManager.LoadMusic();
     resourceManager.LoadSounds();
-    initialScreen = resourceManager.GetTexture(8);
-    arrowTexture = resourceManager.GetTexture(9);
+    initialScreen = resourceManager.GetTexture(15);
+    arrowTexture = resourceManager.GetTexture(16);
     menuSong = resourceManager.GetMusic(0);
     gameSong = resourceManager.GetMusic(1);
     specialGameSong = resourceManager.GetMusic(2);
@@ -101,7 +113,7 @@ void Game::Run() {
     
     player.SetTexture(resourceManager.GetTexture(0));
     player.SetDirection({ 1, 0 });
-    player2.SetTexture(resourceManager.GetTexture(0));
+    player2.SetTexture(resourceManager.GetTexture(1));
     player2.SetDirection({ 1, 0 });
 
     while (!WindowShouldClose()) {
@@ -230,7 +242,7 @@ void Game::Run() {
                 playerName[nameLength] = '\0';
             }
             if (IsKeyPressed(KEY_ENTER)) {
-                SaveGame::SaveNameToFile(playerName, playerScore, ballomKills,doriaKills,bombsPlanted,softBlocksDestroyed,powerUpsPicked,fireUpCounter,bombUpCounter,speedUpCounter);
+                SaveGame::SaveNameToFile(playerName, playerScore, ballomKills, onilKills, dahlKills, minvoKills, doriaKills, ovapeKills, passKills, pontanKills, bombsPlanted,softBlocksDestroyed,powerUpsPicked,fireUpCounter,bombUpCounter,speedUpCounter);
                 entries = SaveGame::GetEntriesFromFile();
 
                 std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
@@ -548,7 +560,25 @@ void Game::Update() {
                 ballomKills++;
                 break;
             case 1:
+                onilKills++;
+                break;
+            case 2:
+                dahlKills++;
+                break;
+            case 3:
+                minvoKills++;
+                break;
+            case 4:
                 doriaKills++;
+                break;
+            case 5:
+                ovapeKills++;
+                break;
+            case 6:
+                passKills++;
+                break;
+            case 7:
+                pontanKills++;
                 break;
             default:
                 break;
@@ -732,13 +762,19 @@ void Game::Draw() {
 
             // Mostrar las estadísticas del jugador
             DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 800, 200, 30, WHITE);
-            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 800, 250, 30, WHITE);
-            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 800, 300, 30, WHITE);
-            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 800, 350, 30, WHITE);
-            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 800, 400, 30, WHITE);
-            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 850, 450, 30, WHITE);
-            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 850, 500, 30, WHITE);
-            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 850, 550, 30, WHITE);
+            DrawText(("Onil Kills: " + std::to_string(selectedEntry.onilKills)).c_str(), 800, 250, 30, WHITE);
+            DrawText(("Dahl Kills: " + std::to_string(selectedEntry.dahlKills)).c_str(), 800, 300, 30, WHITE);
+            DrawText(("Minvo Kills: " + std::to_string(selectedEntry.minvoKills)).c_str(), 800, 350, 30, WHITE);
+            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 800, 400, 30, WHITE);
+            DrawText(("Ovape Kills: " + std::to_string(selectedEntry.ovapeKills)).c_str(), 800, 450, 30, WHITE);
+            DrawText(("Pass Kills: " + std::to_string(selectedEntry.passKills)).c_str(), 800, 500, 30, WHITE);
+            DrawText(("Pontan Kills: " + std::to_string(selectedEntry.pontanKills)).c_str(), 800, 550, 30, WHITE);
+            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 800, 600, 30, WHITE);
+            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 800, 650, 30, WHITE);
+            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 800, 700, 30, WHITE);
+            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 850, 750, 30, WHITE);
+            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 850, 800, 30, WHITE);
+            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 850, 850, 30, WHITE);
 
             // Volver al menú principal o salir
             DrawText("Back", 140, 700, 40, WHITE);
@@ -772,7 +808,7 @@ void Game::AddWalls() {
             if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
                 if (i % 2 == 0 && j % 2 == 0) {
                     walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                    walls.back().SetTexture(resourceManager.GetTexture(5));
+                    walls.back().SetTexture(resourceManager.GetTexture(12));
                 }
                 else if ((i <= 3 && j <= 3)) {
                     //Lugar SEguro
@@ -785,7 +821,7 @@ void Game::AddWalls() {
                         }
                         else {
                             softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                            softBlocks.back().SetTexture(resourceManager.GetTexture(5));
+                            softBlocks.back().SetTexture(resourceManager.GetTexture(12));
                         }
                     }
                 }
@@ -793,14 +829,14 @@ void Game::AddWalls() {
             
             else {
                 walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                walls.back().SetTexture(resourceManager.GetTexture(5));
+                walls.back().SetTexture(resourceManager.GetTexture(12));
             }
         }
         
     }
     int temp = GetRandomValue(0, softBlocks.size() - 1);
     exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
-    exits.back().SetTexture(resourceManager.GetTexture(7));
+    exits.back().SetTexture(resourceManager.GetTexture(14));
     printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
 }
 
@@ -810,7 +846,7 @@ void Game::AddBomb(float x, float y) {
         
 
         bombs.push_back(new Bomb((((int)(x) / CELL_SIZE) * CELL_SIZE), (((int)(y)/ CELL_SIZE) * CELL_SIZE) + 15));
-        bombs.back()->SetTexture(resourceManager.GetTexture(2));
+        bombs.back()->SetTexture(resourceManager.GetTexture(3));
 
         bombsPlanted++;
         
@@ -828,7 +864,7 @@ void Game::AddBlasts(Bomb bomb) {
     Vector2 bombPos = { bomb.GetX(), bomb.GetY() };
 
     blasts.push_back(Blast(bombPos));
-    blasts.back().SetTexture(resourceManager.GetTexture(1));
+    blasts.back().SetTexture(resourceManager.GetTexture(2));
     blasts.back().direction = 4;
     
 
@@ -853,7 +889,7 @@ void Game::AddBlasts(Bomb bomb) {
 
             blasts.push_back(Blast(newPos));
             blasts.back().direction = temp;
-            blasts.back().SetTexture(resourceManager.GetTexture(1));
+            blasts.back().SetTexture(resourceManager.GetTexture(2));
             if (temp2 == bomb.GetRange() - 1) {
                 blasts.back().SetFinal(true);
             }
@@ -881,15 +917,15 @@ bool Game::IsBlastBlocked(Vector2 position) {
                 int ran = std::rand() % 4;
                 if (ran == 1) {
                     powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
                 }
                 if (ran == 2) {
                     powerups.push_back(std::make_unique<BombUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
                 }
                 if (ran == 3) {
                     powerups.push_back(std::make_unique<FireUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(6));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
                 }
                 
             }
@@ -903,14 +939,44 @@ bool Game::IsBlastBlocked(Vector2 position) {
 }
 
 void Game::AddEnemy(Vector2 pos) {
-    int ran = std::rand() % 2;
+    int ran = std::rand() % 8;
     if (ran == 0) {
         enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
         enemies.back()->SetTexture(resourceManager.GetTexture(4));
     }
-    else {
+    else if (ran == 1) {
+        enemies.push_back(std::make_unique<Onil>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(5));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else if (ran == 2) {
+        enemies.push_back(std::make_unique<Dahl>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(6));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else if (ran == 3) {
+        enemies.push_back(std::make_unique<Minvo>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(7));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else if (ran == 4) {
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
-        enemies.back()->SetTexture(resourceManager.GetTexture(3));
+        enemies.back()->SetTexture(resourceManager.GetTexture(8));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else if (ran == 5) {
+        enemies.push_back(std::make_unique<Ovape>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(9));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else if (ran == 6) {
+        enemies.push_back(std::make_unique<Pass>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(10));
+        enemies.back()->SetSpeed(0.6f);
+    }
+    else{
+        enemies.push_back(std::make_unique<Pontan>(pos)); // Crear y agregar Doria
+        enemies.back()->SetTexture(resourceManager.GetTexture(11));
         enemies.back()->SetSpeed(0.6f);
     }
     enemyCounter++;

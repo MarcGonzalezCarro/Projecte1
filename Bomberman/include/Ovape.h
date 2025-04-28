@@ -1,14 +1,14 @@
-#ifndef BALLOM_H
-#define BALLOM_H
+#pragma once
+#ifndef OVAPE_H
+#define OVAPE_H
 
 #include "EnemyBase.h"
 
-class Ballom : public Enemy {
+class Ovape : public Enemy {
 public:
-    Ballom(Vector2 startPosition);
-    ~Ballom() override;
+    Ovape(Vector2 startPosition);
+    ~Ovape() override;
 
-    
 
 private:
     Vector2 direction; // Dirección de movimiento

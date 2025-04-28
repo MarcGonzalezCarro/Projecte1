@@ -1,14 +1,14 @@
-#ifndef BALLOM_H
-#define BALLOM_H
+#pragma once
+#ifndef MINVO_H
+#define MINVO_H
 
 #include "EnemyBase.h"
 
-class Ballom : public Enemy {
+class Minvo : public Enemy {
 public:
-    Ballom(Vector2 startPosition);
-    ~Ballom() override;
+    Minvo(Vector2 startPosition);
+    ~Minvo() override;
 
-    
 
 private:
     Vector2 direction; // Dirección de movimiento

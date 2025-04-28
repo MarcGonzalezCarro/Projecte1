@@ -1,14 +1,14 @@
-#ifndef BALLOM_H
-#define BALLOM_H
+#pragma once
+#ifndef PASS_H
+#define PASS_H
 
 #include "EnemyBase.h"
 
-class Ballom : public Enemy {
+class Pass : public Enemy {
 public:
-    Ballom(Vector2 startPosition);
-    ~Ballom() override;
+    Pass(Vector2 startPosition);
+    ~Pass() override;
 
-    
 
 private:
     Vector2 direction; // Dirección de movimiento
