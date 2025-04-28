@@ -532,6 +532,7 @@
     <ClInclude Include="..\..\include\Blast.h" />
     <ClInclude Include="..\..\include\Bomb.h" />
     <ClInclude Include="..\..\include\BombUp.h" />
+    <ClInclude Include="..\..\include\BossBase.h" />
     <ClInclude Include="..\..\include\Constants.h" />
     <ClInclude Include="..\..\include\Dahl.h" />
     <ClInclude Include="..\..\include\Doria.h" />
@@ -539,6 +540,7 @@
     <ClInclude Include="..\..\include\Exit.h" />
     <ClInclude Include="..\..\include\FireUp.h" />
     <ClInclude Include="..\..\include\Game.h" />
+    <ClInclude Include="..\..\include\MechaBlastX.h" />
     <ClInclude Include="..\..\include\Minvo.h" />
     <ClInclude Include="..\..\include\Onil.h" />
     <ClInclude Include="..\..\include\Ovape.h" />
@@ -558,6 +560,7 @@
     <ClCompile Include="..\..\src\Blast.cpp" />
     <ClCompile Include="..\..\src\Bomb.cpp" />
     <ClCompile Include="..\..\src\BombUp.cpp" />
+    <ClCompile Include="..\..\src\BossBase.cpp" />
     <ClCompile Include="..\..\src\Constants.cpp" />
     <ClCompile Include="..\..\src\Dahl.cpp" />
     <ClCompile Include="..\..\src\Doria.cpp" />
@@ -565,6 +568,7 @@
     <ClCompile Include="..\..\src\Exit.cpp" />
     <ClCompile Include="..\..\src\FireUp.cpp" />
     <ClCompile Include="..\..\src\Game.cpp" />
+    <ClCompile Include="..\..\src\MechaBlastX.cpp" />
     <ClCompile Include="..\..\src\Minvo.cpp" />
     <ClCompile Include="..\..\src\Onil.cpp" />
     <ClCompile Include="..\..\src\Ovape.cpp" />
