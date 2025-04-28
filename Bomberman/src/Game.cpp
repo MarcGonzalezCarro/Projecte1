@@ -10,6 +10,8 @@
 #include "Ovape.h"
 #include "Pass.h"
 #include "Pontan.h"
+#include "BossBase.h"
+#include "MechaBlastX.h"
 #include "PowerUp.h"
 #include "BombUp.h"
 #include "FireUp.h"
@@ -52,13 +54,15 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 1;
+int currentStage = 5;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
 std::vector<std::unique_ptr<PowerUp>> powerups;
 std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
+
+std::unique_ptr<Boss> currentBoss;
 
 Music menuSong;
 Music gameSong;
@@ -643,6 +647,9 @@ void Game::Draw() {
             for (auto& blast : blasts) blast.Draw();
             for (const auto& enemy : enemies) enemy->Draw();
             if (player.IsActive()) player.Draw();
+            if (currentStage == 5) {
+                currentBoss->Draw();
+            }
             EndMode2D();
         }else{
         // Cámara 2
@@ -803,41 +810,62 @@ void Game::AddWalls() {
     walls.clear();
     softBlocks.clear();
 
-    for (int i = 0; i < 31; i++) {
-        for (int j = 0; j < 13; j++) {
-            if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
-                if (i % 2 == 0 && j % 2 == 0) {
-                    walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                    walls.back().SetTexture(resourceManager.GetTexture(12));
-                }
-                else if ((i <= 3 && j <= 3)) {
-                    //Lugar SEguro
-                }
-                else{
-                    if (GetRandomValue(1, 4) == 1){
+    if (currentStage != 5) {
+        for (int i = 0; i < 31; i++) {
+            for (int j = 0; j < 13; j++) {
+                if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
+                    if (i % 2 == 0 && j % 2 == 0) {
+                        walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                        walls.back().SetTexture(resourceManager.GetTexture(12));
+                    }
+                    else if ((i <= 3 && j <= 3)) {
+                        //Lugar SEguro
+                    }
+                    else {
                         if (GetRandomValue(1, 4) == 1) {
-                            Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
-                            AddEnemy(v);
-                        }
-                        else {
-                            softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                            softBlocks.back().SetTexture(resourceManager.GetTexture(12));
+                            if (GetRandomValue(1, 4) == 1) {
+                                Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
+                                AddEnemy(v);
+                            }
+                            else {
+                                softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                                softBlocks.back().SetTexture(resourceManager.GetTexture(12));
+                            }
                         }
                     }
                 }
+
+                else {
+                    walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                    walls.back().SetTexture(resourceManager.GetTexture(12));
+                }
             }
-            
-            else {
-                walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                walls.back().SetTexture(resourceManager.GetTexture(12));
+
+        }
+
+        int temp = GetRandomValue(0, softBlocks.size() - 1);
+        exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
+        exits.back().SetTexture(resourceManager.GetTexture(14));
+        printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
+    }
+    else {
+        for (int i = 0; i < 31; i++) {
+            for (int j = 0; j < 13; j++) {
+                if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
+                    if (i % 2 == 0 && j % 2 == 0 && (i <= 11 || i >= 19 || j >= 5)) {
+                        walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                        walls.back().SetTexture(resourceManager.GetTexture(12));
+                    }
+                }else {
+                    walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                    walls.back().SetTexture(resourceManager.GetTexture(12));
+                }
             }
+
         }
         
     }
-    int temp = GetRandomValue(0, softBlocks.size() - 1);
-    exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
-    exits.back().SetTexture(resourceManager.GetTexture(14));
-    printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
+   
 }
 
 void Game::AddBomb(float x, float y) {
@@ -982,6 +1010,12 @@ void Game::AddEnemy(Vector2 pos) {
     enemyCounter++;
 }
 
+void Game::AddBoss(Vector2 pos)
+{
+    currentBoss = std::make_unique<MechaBlastX>(pos);
+    currentBoss->SetTexture(resourceManager.GetTexture(4));
+}
+
 int Game::CheckCollisions(Rectangle rec) {
     for (const auto& wall : walls) {
         if (CheckCollisionRecs(rec, wall.GetBound())) return 1;
@@ -994,21 +1028,30 @@ int Game::CheckCollisions(Rectangle rec) {
 }
 
 void Game::CheckExitCollision() {
-    Rectangle p = {player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height};
-    Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE - 20, CELL_SIZE - 20};
-    if (CheckCollisionRecs(p, e)) {
-        NextLevel();
+    if (currentStage != 5) {
+        Rectangle p = { player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height };
+        Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE - 20, CELL_SIZE - 20 };
+        if (CheckCollisionRecs(p, e)) {
+            NextLevel();
+        }
     }
+
 }
 
 bool Game::CheckEnemyCollision(float x, float y) {
-    Rectangle p = { x, y, player.GetBounds().width, player.GetBounds().height };
+    if (currentStage != 5) {
 
-    for (const auto& enemy : enemies) {
-        Rectangle e = { enemy->GetPosition().x, enemy->GetPosition().y, CELL_SIZE - 20, CELL_SIZE - 20};
-        if (CheckCollisionRecs(p, e)) return true;
+        Rectangle p = { x, y, player.GetBounds().width, player.GetBounds().height };
+
+        for (const auto& enemy : enemies) {
+            Rectangle e = { enemy->GetPosition().x, enemy->GetPosition().y, CELL_SIZE - 20, CELL_SIZE - 20 };
+            if (CheckCollisionRecs(p, e)) return true;
+        }
+        return false;
     }
-    return false;
+    else {
+        return false;
+    }
 }
 
 void Game::CheckPowerUPCollision(Rectangle rec) {

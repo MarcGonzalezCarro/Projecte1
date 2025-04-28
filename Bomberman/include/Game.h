@@ -28,6 +28,7 @@ public:
     void AddWalls();
     void AddBomb(float x, float y);
     void AddEnemy(Vector2 pos);
+    void AddBoss(Vector2 pos);
     void AddBlasts(Bomb bomb);
     void ExplodeBombs();
     void ResetStage();
