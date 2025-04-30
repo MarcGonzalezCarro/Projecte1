@@ -48,6 +48,8 @@ void ResourceManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/Exit.png")); //14
     textures.push_back(LoadTexture("resources/Bomberman-TitleScreen.png")); //15
     textures.push_back(LoadTexture("resources/Flecha.png")); //16
+
+    textures.push_back(LoadTexture("resources/MechaBlastX.png")); //17
 }
 
 void ResourceManager::LoadMusic() {

@@ -25,8 +25,11 @@ public:
     void SetTexture(Texture2D newTexture);
     virtual bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks);
     void SetSpeed(float temp);
+
     bool IsActive();
     bool IsDead();
+    bool isAttacking;
+
     void Die();
 
 protected:

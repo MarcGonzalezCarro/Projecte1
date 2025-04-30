@@ -41,6 +41,7 @@ public:
     void CheckPowerUPCollision(Rectangle rec);
     void CheckExitCollision();
     bool CheckEnemyCollision(float x, float y);
+    void BossLevel();
 };
 
 extern std::vector<Blast> blasts;

@@ -54,7 +54,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 5;
+int currentStage = 4;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -119,6 +119,8 @@ void Game::Run() {
     player.SetDirection({ 1, 0 });
     player2.SetTexture(resourceManager.GetTexture(1));
     player2.SetDirection({ 1, 0 });
+    
+    AddBoss({1400,400});
 
     while (!WindowShouldClose()) {
         ///////////////////////////////////////////////////////
@@ -524,7 +526,9 @@ void Game::Update() {
     if (IsKeyDown(KEY_P)) {
         playerScore += 100000;
     }
-    
+    if (IsKeyDown(KEY_B)) {
+        currentBoss->isAttacking = true;
+    }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (auto it = blasts.begin(); it != blasts.end(); ) {
         it->Update(GetFrameTime()); 
@@ -608,6 +612,8 @@ void Game::Update() {
         }
         ++it; 
     }
+
+    currentBoss->Update(GetFrameTime(), walls, softBlocks);
 
     elapsedTime = GetTime() - startTime;
     remainingTime = targetTime - elapsedTime;
@@ -1013,7 +1019,7 @@ void Game::AddEnemy(Vector2 pos) {
 void Game::AddBoss(Vector2 pos)
 {
     currentBoss = std::make_unique<MechaBlastX>(pos);
-    currentBoss->SetTexture(resourceManager.GetTexture(4));
+    currentBoss->SetTexture(resourceManager.GetTexture(17));
 }
 
 int Game::CheckCollisions(Rectangle rec) {
@@ -1032,7 +1038,12 @@ void Game::CheckExitCollision() {
         Rectangle p = { player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height };
         Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE - 20, CELL_SIZE - 20 };
         if (CheckCollisionRecs(p, e)) {
-            NextLevel();
+            if ((currentStage + 1) % 5 == 0) {
+                BossLevel();
+            }
+            else {
+                NextLevel();
+            }
         }
     }
 
@@ -1053,6 +1064,7 @@ bool Game::CheckEnemyCollision(float x, float y) {
         return false;
     }
 }
+
 
 void Game::CheckPowerUPCollision(Rectangle rec) {
     for (auto it = powerups.begin(); it != powerups.end();) {
@@ -1165,6 +1177,31 @@ void Game::NextLevel() {
     powerups.clear();
     enemyCounter = 0;
     player.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    if (isCoop) {
+        player2.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
+    }
+    AddWalls();
+    //Empezar subrutina
+    ShowStageScreen("Stage ");
+    startTime = GetTime();
+    targetTime = 200.0f;
+}
+
+
+void Game::BossLevel()
+{
+    currentStage++;
+    gameRunning = false;
+
+
+
+    blasts.clear();
+    bombs.clear();
+    enemies.clear();
+    exits.clear();
+    powerups.clear();
+    enemyCounter = 0;
+    player.SetPosition(INITIAL_PLAYER_X + (CELL_SIZE * 14), INITIAL_PLAYER_X + (CELL_SIZE * 12));
     if (isCoop) {
         player2.SetPosition(INITIAL_PLAYER_X, INITIAL_PLAYER_Y);
     }
