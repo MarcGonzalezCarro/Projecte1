@@ -948,7 +948,7 @@ bool Game::IsBlastBlocked(Vector2 position) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
             
             if (it->GetBound().x != exits.back().GetBound().x || it->GetBound().y != exits.back().GetBound().y) {
-                int ran = std::rand() % 4;
+                int ran = std::rand() % 20;
                 if (ran == 1) {
                     powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
                     powerups.back()->SetTexture(resourceManager.GetTexture(13));
@@ -973,25 +973,25 @@ bool Game::IsBlastBlocked(Vector2 position) {
 }
 
 void Game::AddEnemy(Vector2 pos) {
-    int ran = std::rand() % 8;
+    int ran = std::rand() % 20;
     if (ran == 0) {
         enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
         enemies.back()->SetTexture(resourceManager.GetTexture(4));
     }
     else if (ran == 1) {
-        enemies.push_back(std::make_unique<Onil>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Onil>(pos)); // Crear y agregar Onil
         enemies.back()->SetTexture(resourceManager.GetTexture(5));
-        enemies.back()->SetSpeed(0.6f);
+        enemies.back()->SetSpeed(1.3f);
     }
     else if (ran == 2) {
-        enemies.push_back(std::make_unique<Dahl>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Dahl>(pos)); // Crear y agregar Dahl
         enemies.back()->SetTexture(resourceManager.GetTexture(6));
-        enemies.back()->SetSpeed(0.6f);
+        enemies.back()->SetSpeed(1.3f);
     }
     else if (ran == 3) {
-        enemies.push_back(std::make_unique<Minvo>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Minvo>(pos)); // Crear y agregar Minvo
         enemies.back()->SetTexture(resourceManager.GetTexture(7));
-        enemies.back()->SetSpeed(0.6f);
+        enemies.back()->SetSpeed(1.5f);
     }
     else if (ran == 4) {
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
@@ -999,19 +999,18 @@ void Game::AddEnemy(Vector2 pos) {
         enemies.back()->SetSpeed(0.6f);
     }
     else if (ran == 5) {
-        enemies.push_back(std::make_unique<Ovape>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Ovape>(pos)); // Crear y agregar Ovape
         enemies.back()->SetTexture(resourceManager.GetTexture(9));
-        enemies.back()->SetSpeed(0.6f);
     }
     else if (ran == 6) {
-        enemies.push_back(std::make_unique<Pass>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Pass>(pos)); // Crear y agregar Pass
         enemies.back()->SetTexture(resourceManager.GetTexture(10));
-        enemies.back()->SetSpeed(0.6f);
+        enemies.back()->SetSpeed(1.8f);
     }
     else{
-        enemies.push_back(std::make_unique<Pontan>(pos)); // Crear y agregar Doria
+        enemies.push_back(std::make_unique<Pontan>(pos)); // Crear y agregar Pontan
         enemies.back()->SetTexture(resourceManager.GetTexture(11));
-        enemies.back()->SetSpeed(0.6f);
+        enemies.back()->SetSpeed(2.0f);
     }
     enemyCounter++;
 }

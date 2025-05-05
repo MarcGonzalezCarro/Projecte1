@@ -9,6 +9,9 @@ public:
     Pontan(Vector2 startPosition);
     ~Pontan() override;
 
+    bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks) override;
+    void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks) override;
+
 
 
 private:
