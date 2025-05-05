@@ -54,7 +54,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 4;
+int currentStage = 5;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 

@@ -37,7 +37,7 @@ void MechaBlastX::Update(float deltaTime, const std::vector<Wall>& walls, const 
             currentFrame++;
         }
         if (!isDead) {
-            if (currentFrame > 9) {
+            if (currentFrame > 27) {
                 currentFrame = 0;
                 isAttacking = false;
             }
@@ -71,6 +71,11 @@ void MechaBlastX::Draw() const
         source.x = 78 * 5 + 78 * currentFrame;
     }
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
+}
+
+void MechaBlastX::Phase1Attack(Vector2 pos)
+{
+    blasts.emplace_back(Blast(pos));
 }
 
 
