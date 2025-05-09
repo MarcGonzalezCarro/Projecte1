@@ -30,6 +30,7 @@ public:
     void AddEnemy(Vector2 pos);
     void AddBoss(Vector2 pos);
     void AddBlasts(Bomb bomb);
+    void AddBlasts1(Vector2 pos);
     void ExplodeBombs();
     void ResetStage();
     int CheckCollisions(Rectangle rec);
@@ -43,6 +44,14 @@ public:
     void CheckExitCollision();
     bool CheckEnemyCollision(float x, float y);
     void BossLevel();
+    void PrepareBossAttack1();
+    void PrepareBossAttack2();
+    void PrepareBossAttack3();
+    void BossAttack1();
+    void CreateCircle(int centerX, int centerY, int radius);
+    void StartBlastPropagation(int centerX, int centerY, int initialRadius);
+    void BossAttack2();
+    void BossCoroutine(float time);
 };
 
 extern std::vector<Blast> blasts;
