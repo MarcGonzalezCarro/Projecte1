@@ -1,14 +1,14 @@
 #pragma once
-#ifndef BOMBUP_H
-#define BOMBUP_H
+#ifndef REMOTECONTROL_H
+#define REMOTECONTROL_H
 
 #include "PowerUp.h"
 
-class BombUp : public PowerUp {
+class RemoteControl : public PowerUp {
 public:
-    BombUp(float x, float y);
+    RemoteControl(float x, float y);
     void Effect() override;
 };
 
-#endif // BOMBUP_H
+#endif // REMOTECONTROL_H
 

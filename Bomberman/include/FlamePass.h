@@ -1,14 +1,14 @@
 #pragma once
-#ifndef BOMBUP_H
-#define BOMBUP_H
+#ifndef FLAMEPASS_H
+#define FLAMEPASS_H
 
 #include "PowerUp.h"
 
-class BombUp : public PowerUp {
+class FlamePass : public PowerUp {
 public:
-    BombUp(float x, float y);
+    FlamePass(float x, float y);
     void Effect() override;
 };
 
-#endif // BOMBUP_H
+#endif // FLAMEPASS_H
 

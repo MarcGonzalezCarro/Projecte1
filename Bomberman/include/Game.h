@@ -33,6 +33,7 @@ public:
     void ExplodeBombs();
     void ResetStage();
     int CheckCollisions(Rectangle rec);
+    int CheckPlayerCollisions(Rectangle rec);
     bool IsBlastBlocked(Vector2 position);
     bool CheckBlastDamage(Vector2 pos);
     void GameOver();

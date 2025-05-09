@@ -15,5 +15,7 @@ extern const int MAX_TOPSCORES;
 extern int BOMB_RANGE;
 extern int MAX_BOMBS;
 extern int PLAYER_SPEED;
+extern bool PUWP;
+extern bool INVINCIBLE;
 
 #endif

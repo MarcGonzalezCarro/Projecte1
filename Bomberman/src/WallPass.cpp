@@ -1,10 +1,10 @@
-#include "BombUp.h"
+#include "WallPass.h"
 #include "Constants.h"
 
-BombUp::BombUp(float x, float y) : PowerUp(x, y) {
-    id = 0;
+WallPass::WallPass(float x, float y) : PowerUp(x, y) {
+    id = 3;
 }
 
-void BombUp::Effect(){
-    MAX_BOMBS++;
+void WallPass::Effect(){
+    PUWP = true;
 }

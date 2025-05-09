@@ -1,10 +1,10 @@
-#include "BombUp.h"
+#include "RemoteControl.h"
 #include "Constants.h"
 
-BombUp::BombUp(float x, float y) : PowerUp(x, y) {
-    id = 0;
+RemoteControl::RemoteControl(float x, float y) : PowerUp(x, y) {
+    id = 4;
 }
 
-void BombUp::Effect(){
+void RemoteControl::Effect(){
     MAX_BOMBS++;
 }

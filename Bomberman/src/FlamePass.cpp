@@ -1,10 +1,10 @@
-#include "BombUp.h"
+#include "FlamePass.h"
 #include "Constants.h"
 
-BombUp::BombUp(float x, float y) : PowerUp(x, y) {
-    id = 0;
+FlamePass::FlamePass(float x, float y) : PowerUp(x, y) {
+    id = 6;
 }
 
-void BombUp::Effect(){
+void FlamePass::Effect(){
     MAX_BOMBS++;
 }

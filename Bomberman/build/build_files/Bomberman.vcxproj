@@ -531,6 +531,7 @@
     <ClInclude Include="..\..\include\Ballom.h" />
     <ClInclude Include="..\..\include\Blast.h" />
     <ClInclude Include="..\..\include\Bomb.h" />
+    <ClInclude Include="..\..\include\BombPass.h" />
     <ClInclude Include="..\..\include\BombUp.h" />
     <ClInclude Include="..\..\include\BossBase.h" />
     <ClInclude Include="..\..\include\Constants.h" />
@@ -539,7 +540,9 @@
     <ClInclude Include="..\..\include\EnemyBase.h" />
     <ClInclude Include="..\..\include\Exit.h" />
     <ClInclude Include="..\..\include\FireUp.h" />
+    <ClInclude Include="..\..\include\FlamePass.h" />
     <ClInclude Include="..\..\include\Game.h" />
+    <ClInclude Include="..\..\include\Invincible.h" />
     <ClInclude Include="..\..\include\MechaBlastX.h" />
     <ClInclude Include="..\..\include\Minvo.h" />
     <ClInclude Include="..\..\include\Onil.h" />
@@ -548,17 +551,20 @@
     <ClInclude Include="..\..\include\Player.h" />
     <ClInclude Include="..\..\include\Pontan.h" />
     <ClInclude Include="..\..\include\PowerUp.h" />
+    <ClInclude Include="..\..\include\RemoteControl.h" />
     <ClInclude Include="..\..\include\ResourceManager.h" />
     <ClInclude Include="..\..\include\SaveGame.h" />
     <ClInclude Include="..\..\include\SoftBlock.h" />
     <ClInclude Include="..\..\include\SpeedUp.h" />
     <ClInclude Include="..\..\include\Wall.h" />
+    <ClInclude Include="..\..\include\WallPass.h" />
     <ClInclude Include="..\..\include\resource_dir.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Ballom.cpp" />
     <ClCompile Include="..\..\src\Blast.cpp" />
     <ClCompile Include="..\..\src\Bomb.cpp" />
+    <ClCompile Include="..\..\src\BombPass.cpp" />
     <ClCompile Include="..\..\src\BombUp.cpp" />
     <ClCompile Include="..\..\src\BossBase.cpp" />
     <ClCompile Include="..\..\src\Constants.cpp" />
@@ -567,7 +573,9 @@
     <ClCompile Include="..\..\src\EnemyBase.cpp" />
     <ClCompile Include="..\..\src\Exit.cpp" />
     <ClCompile Include="..\..\src\FireUp.cpp" />
+    <ClCompile Include="..\..\src\FlamePass.cpp" />
     <ClCompile Include="..\..\src\Game.cpp" />
+    <ClCompile Include="..\..\src\Invincible.cpp" />
     <ClCompile Include="..\..\src\MechaBlastX.cpp" />
     <ClCompile Include="..\..\src\Minvo.cpp" />
     <ClCompile Include="..\..\src\Onil.cpp" />
@@ -576,11 +584,13 @@
     <ClCompile Include="..\..\src\Player.cpp" />
     <ClCompile Include="..\..\src\Pontan.cpp" />
     <ClCompile Include="..\..\src\PowerUp.cpp" />
+    <ClCompile Include="..\..\src\RemoteControl.cpp" />
     <ClCompile Include="..\..\src\ResourceManager.cpp" />
     <ClCompile Include="..\..\src\SaveGame.cpp" />
     <ClCompile Include="..\..\src\SoftBlock.cpp" />
     <ClCompile Include="..\..\src\SpeedUp.cpp" />
     <ClCompile Include="..\..\src\Wall.cpp" />
+    <ClCompile Include="..\..\src\WallPass.cpp" />
     <ClCompile Include="..\..\src\main.cpp" />
   </ItemGroup>
   <ItemGroup>

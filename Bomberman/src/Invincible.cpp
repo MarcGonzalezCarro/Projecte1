@@ -1,10 +1,25 @@
-#include "BombUp.h"
+#include "Invincible.h"
 #include "Constants.h"
 
-BombUp::BombUp(float x, float y) : PowerUp(x, y) {
-    id = 0;
+Invincible::Invincible(float x, float y) : PowerUp(x, y) {
+    id = 7;
 }
 
-void BombUp::Effect(){
-    MAX_BOMBS++;
+void Invincible::Effect() {
+    INVINCIBLE = true;
+    active = true;
+    startTime = std::chrono::steady_clock::now();
+}
+
+void Invincible::Update(){
+    printf("aaa");
+    if (active) {
+        auto now = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(now - startTime).count();
+
+        if (duration >= 5) {
+            INVINCIBLE = false;
+            active = false;
+        }
+    }
 }

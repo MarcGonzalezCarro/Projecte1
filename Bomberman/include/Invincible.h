@@ -1,14 +1,22 @@
 #pragma once
-#ifndef BOMBUP_H
-#define BOMBUP_H
+#ifndef INVINCIBLE_H
+#define INVINCIBLE_H
 
 #include "PowerUp.h"
+#include <chrono>
 
-class BombUp : public PowerUp {
+class Invincible : public PowerUp {
 public:
-    BombUp(float x, float y);
+    Invincible(float x, float y);
+
     void Effect() override;
+    void Update() override; // Método nuevo para controlar el tiempo
+private:
+    std::chrono::time_point<std::chrono::steady_clock> startTime;
+    bool active = false;
 };
 
-#endif // BOMBUP_H
+#endif // INVINCIBLE_H
+
+
 

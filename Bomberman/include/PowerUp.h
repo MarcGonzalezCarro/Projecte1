@@ -18,6 +18,7 @@ public:
     Rectangle GetBound() const;
     void SetTexture(Texture2D text);
     virtual void Effect();
+    virtual void Update() {}
 };
 
 #endif

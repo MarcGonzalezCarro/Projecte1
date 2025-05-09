@@ -15,6 +15,11 @@
 #include "PowerUp.h"
 #include "BombUp.h"
 #include "FireUp.h"
+#include "WallPass.h"
+#include "BombPass.h"
+#include "FlamePass.h"
+#include "Invincible.h"
+#include "RemoteControl.h"
 #include "SpeedUp.h"
 #include "Bomb.h"
 #include "Exit.h"
@@ -54,7 +59,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 5;
+int currentStage = 1;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -322,7 +327,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            if (CheckCollisions(player.GetBounds()) != 0) {
+            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
             
@@ -334,7 +339,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            if (CheckCollisions(player.GetBounds()) != 0) {
+            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
                 player.SetX(prevX);
             }
             
@@ -346,7 +351,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            if (CheckCollisions(player.GetBounds()) != 0) {
+            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
             
@@ -358,7 +363,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            if (CheckCollisions(player.GetBounds()) != 0) {
+            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
                 player.SetY(prevY);
             }
             
@@ -369,14 +374,18 @@ void Game::Update() {
     if (CheckEnemyCollision(playerPos.x, playerPos.y)) {
         if (!player.IsDead()) {
             PlaySound(resourceManager.GetSound(4));
-            player.Die();
+            if (INVINCIBLE == false) {
+                player.Die();
+            }
         }
     }
 
     if (CheckBlastDamage(playerPos)) {
         if(!player.IsDead()){
             PlaySound(resourceManager.GetSound(4));
-            player.Die();
+            if (INVINCIBLE == false) {
+                player.Die();
+            }
         }
     }
     if (playerWalking) {
@@ -429,7 +438,7 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                     PlaySound(resourceManager.GetSound(0));
                 }
-                if (CheckCollisions(player2.GetBounds()) != 0) {
+                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
                     player2.SetX(prevX2);
                 }
                 
@@ -441,7 +450,7 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                     PlaySound(resourceManager.GetSound(0));
                 }
-                if (CheckCollisions(player2.GetBounds()) != 0) {
+                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
                     player2.SetX(prevX2);
                 }
                 
@@ -453,7 +462,7 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                     PlaySound(resourceManager.GetSound(1));
                 }
-                if (CheckCollisions(player2.GetBounds()) != 0) {
+                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
                     player2.SetY(prevY2);
                 }
                 
@@ -465,7 +474,7 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                     PlaySound(resourceManager.GetSound(1));
                 }
-                if (CheckCollisions(player2.GetBounds()) != 0) {
+                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
                     player2.SetY(prevY2);
                 }
                 
@@ -476,14 +485,18 @@ void Game::Update() {
         if (CheckEnemyCollision(playerPos2.x, playerPos2.y)) {
             if (!player2.IsDead()) {
                 PlaySound(resourceManager.GetSound(4));
-                player2.Die();
+                if (INVINCIBLE == false) {
+                    player.Die();
+                }
             }
         }
 
         if (CheckBlastDamage(playerPos2)) {
             if (!player2.IsDead()) {
                 PlaySound(resourceManager.GetSound(4));
-                player2.Die();
+                if (INVINCIBLE == false) {
+                    player.Die();
+                }
             }
         }
         if (playerWalking2) {
@@ -529,6 +542,7 @@ void Game::Update() {
     if (IsKeyDown(KEY_B)) {
         currentBoss->isAttacking = true;
     }
+    //printf("%d", PUWP);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     for (auto it = blasts.begin(); it != blasts.end(); ) {
         it->Update(GetFrameTime()); 
@@ -538,6 +552,10 @@ void Game::Update() {
         else {
             ++it; 
         }
+    }
+
+    for (auto& powerup : powerups) {
+        powerup->Update();
     }
 
     for (auto it = bombs.begin(); it != bombs.end(); ) {
@@ -961,7 +979,31 @@ bool Game::IsBlastBlocked(Vector2 position) {
                     powerups.push_back(std::make_unique<FireUp>((*it).GetBound().x, (*it).GetBound().y));
                     powerups.back()->SetTexture(resourceManager.GetTexture(13));
                 }
-                
+                if (ran == 4) {
+                    powerups.push_back(std::make_unique<WallPass>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
+                if (ran == 5) {
+                    powerups.push_back(std::make_unique<BombPass>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
+                if (ran == 6) {
+                    powerups.push_back(std::make_unique<FlamePass>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
+                if (ran == 7) {
+                    powerups.push_back(std::make_unique<Invincible>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
+                if (ran == 8) {
+                    powerups.push_back(std::make_unique<RemoteControl>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
+                else
+                {
+                    powerups.push_back(std::make_unique<Invincible>((*it).GetBound().x, (*it).GetBound().y));
+                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
+                }
             }
             
             //printf("Añadido en: %f, %f\n", (*it).GetBound().x, (*it).GetBound().y);
@@ -1027,6 +1069,20 @@ int Game::CheckCollisions(Rectangle rec) {
     }
     for (const auto& softBlock : softBlocks) {
         if (CheckCollisionRecs(rec, softBlock.GetBound())) return 2;
+    }
+    
+    return 0;
+}
+
+int Game::CheckPlayerCollisions(Rectangle rec) {
+    for (const auto& wall : walls) {
+        if (CheckCollisionRecs(rec, wall.GetBound())) return 1;
+    }
+    if (PUWP == false)
+    {
+        for (const auto& softBlock : softBlocks) {
+            if (CheckCollisionRecs(rec, softBlock.GetBound())) return 2;
+        }
     }
     
     return 0;
@@ -1131,6 +1187,8 @@ void Game::ResetStage() {
     ShowStageScreen("Stage ");
     startTime = GetTime();
     targetTime = 200.0f;
+    PUWP = false;
+    INVINCIBLE = false;
 }
 
 void Game::ShowStageScreen(const char* stageText) {
@@ -1214,4 +1272,6 @@ void Game::BossLevel()
 void Game::GameOver() {
     gameRunning = false;
     isDead = true;
+    PUWP = false;
+    INVINCIBLE = false;
 }
