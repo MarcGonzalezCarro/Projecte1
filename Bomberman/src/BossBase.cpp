@@ -15,6 +15,10 @@ Boss::Boss(Vector2 startPosition)
 
 Boss::~Boss() {}
 
+void Boss::Phase1Attack(Vector2 pos)
+{
+}
+
 void Boss::Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
     
 }

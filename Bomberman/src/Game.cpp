@@ -541,6 +541,7 @@ void Game::Update() {
     }
     if (IsKeyDown(KEY_B)) {
         currentBoss->isAttacking = true;
+        currentBoss->Phase1Attack(playerPos);
     }
     //printf("%d", PUWP);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -630,7 +631,7 @@ void Game::Update() {
         }
         ++it; 
     }
-
+    
     currentBoss->Update(GetFrameTime(), walls, softBlocks);
 
     elapsedTime = GetTime() - startTime;
@@ -673,6 +674,7 @@ void Game::Draw() {
             if (player.IsActive()) player.Draw();
             if (currentStage == 5) {
                 currentBoss->Draw();
+
             }
             EndMode2D();
         }else{
@@ -954,6 +956,7 @@ void Game::AddBlasts(Bomb bomb) {
         temp++;
     }
 }
+
 bool Game::IsBlastBlocked(Vector2 position) {
     for (const auto& wall : walls) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float) CELL_SIZE, (float)CELL_SIZE}, wall.GetBound())) {
@@ -1061,6 +1064,7 @@ void Game::AddBoss(Vector2 pos)
 {
     currentBoss = std::make_unique<MechaBlastX>(pos);
     currentBoss->SetTexture(resourceManager.GetTexture(17));
+
 }
 
 int Game::CheckCollisions(Rectangle rec) {

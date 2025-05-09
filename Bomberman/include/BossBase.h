@@ -11,7 +11,7 @@ public:
     Boss(Vector2 startPosition); // Constructor
     int id;
     virtual ~Boss(); // Destructor virtual para herencia
-
+    virtual void Phase1Attack(Vector2 pos);
     virtual void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks); // Actualización del enemigo (movimientos, lógica)
     virtual void Draw() const;         // Dibuja el enemigo en pantalla
 

@@ -43,6 +43,7 @@ void MechaBlastX::Update(float deltaTime, const std::vector<Wall>& walls, const 
             }
         }
     }
+
 }
 
 void MechaBlastX::Draw() const
@@ -71,11 +72,48 @@ void MechaBlastX::Draw() const
         source.x = 78 * 5 + 78 * currentFrame;
     }
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
+
+}
+
+
+
+void MechaBlastX::GenerateBlasts(Vector2 playerPosition)
+{
+    // Generar los blasts alrededor de la zona de 3x3
+    for (int dx = -1; dx <= 1; ++dx)
+    {
+        for (int dy = -1; dy <= 1; ++dy)
+        {
+            Vector2 blastPos = { playerPosition.x + dx * CELL_SIZE, playerPosition.y + dy * CELL_SIZE };
+            // Crear y añadir el blast a la lista de blasts
+            blasts->push_back(Blast(blastPos));
+            printf("YEEE");
+        }
+    }
 }
 
 void MechaBlastX::Phase1Attack(Vector2 pos)
 {
-    blasts.emplace_back(Blast(pos));
+    // Zona roja alrededor del jugador en un área 3x3
+    float zoneSize = 3.0f * CELL_SIZE; // 3x3, cada celda del sprite tiene 78 px de ancho
+    Vector2 topLeft = { pos.x - zoneSize / 2.0f, pos.y - zoneSize / 2.0f };
+    Vector2 bottomRight = { pos.x + zoneSize / 2.0f, pos.y + zoneSize / 2.0f };
+
+    // Dibujar la zona roja (visualizarla)
+    if (!isDead) {
+        DrawRectangleRec({ topLeft.x, topLeft.y, zoneSize, zoneSize }, RED);
+    }
+
+    // Aquí gestionamos el temporizador de espera antes de generar los blasts
+    attackDelayCounter -= GetFrameTime(); // Reduce el contador de tiempo
+
+    if (attackDelayCounter <= 0.0f) {
+        // Ya pasó el retraso, ahora generamos los blasts
+        GenerateBlasts(pos);
+        attackDelayCounter = attackDelayDuration; // Reiniciar el temporizador
+    }
 }
+
+
 
 
