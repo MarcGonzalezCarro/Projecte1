@@ -23,6 +23,7 @@
 #include "SpeedUp.h"
 #include "Bomb.h"
 #include "Exit.h"
+#include "Coil.h"
 #include "SaveGame.h"
 #include "ResourceManager.h"
 #include <sstream>
@@ -68,6 +69,7 @@ std::vector<std::unique_ptr<Enemy>> enemies;
 std::vector<Exit> exits;
 
 std::unique_ptr<Boss> currentBoss;
+std::vector<std::unique_ptr<Coil>> coils;
 float bossAttackCooldown = 5.0f;
 float zoneMarkCooldown = 2.0f;
 bool attack1state = false;
@@ -75,7 +77,7 @@ float propagationTime;
 float expansionSpeed = 2.0f;
 int currentRadius = 3;
 int radius = 3;
-float maxRadius;
+float maxRadius = 6;
 int centerX, centerY;
 bool propagationState;
 std::vector<Rectangle> zoneMark;
@@ -143,9 +145,15 @@ void Game::Run() {
     player.SetDirection({ 1, 0 });
     player2.SetTexture(resourceManager.GetTexture(1));
     player2.SetDirection({ 1, 0 });
+<<<<<<< Updated upstream
     
     srand(static_cast<unsigned int>(time(nullptr)));
+=======
+
+
+>>>>>>> Stashed changes
     AddBoss({1400,400});
+
 
     while (!WindowShouldClose()) {
         ///////////////////////////////////////////////////////
@@ -573,7 +581,10 @@ void Game::Update() {
             ++it; 
         }
     }
-
+    for (auto it = coils.begin(); it != coils.end(); ) {
+        (*it)->Update(GetFrameTime());
+         ++it;        
+    }
     for (auto& powerup : powerups) {
         powerup->Update();
     }
@@ -663,10 +674,30 @@ void Game::Update() {
 
     bossAttackCooldown -= GetFrameTime();
     if (bossAttackCooldown <= 0) {
-        zoneMark.clear();
-        PrepareBossAttack3();
-        currentBoss->isAttacking = true;
-        bossAttackCooldown = 3.0f;
+        
+        int attackType = 0;
+        if (attack1state == false) {
+            if (propagationState == false) {
+                attackType = rand() % 3;  // Número aleatorio entre 0 y 2
+            }
+            else {
+                attackType = 0;
+            }
+            switch (attackType) {
+            case 0:
+                PrepareBossAttack1();
+                break;
+            case 1:
+                PrepareBossAttack2();
+                break;
+            case 2:
+                PrepareBossAttack3();
+                break;
+            }
+
+            currentBoss->isAttacking = true;
+            bossAttackCooldown = 3.0f;
+        }
     }
     if (attack1state == true) {
         BossCoroutine(GetFrameTime());
@@ -682,11 +713,11 @@ void Game::Update() {
 
             // Aumentamos el radio
             currentRadius += 1;
-
+            
             // Re-creamos el círculo y los blasts en la nueva zona
             CreateCircle(centerX, centerY, currentRadius);
-            AddBlasts1({(float) centerX, (float)centerY });
-            BossAttack1();
+            
+            attack1state = true;
 
             // Si el radio ha alcanzado el máximo, terminamos la propagación
             if (currentRadius >= maxRadius) {
@@ -732,6 +763,7 @@ void Game::Draw() {
             for (auto& bomb : bombs) bomb->Draw();
             for (auto& blast : blasts) blast.Draw();
             for (const auto& enemy : enemies) enemy->Draw();
+            
             if (player.IsActive()) player.Draw();
             if (currentStage == 5) {
                 currentBoss->Draw();
@@ -739,6 +771,7 @@ void Game::Draw() {
                 {
                     DrawRectangle(var.x,var.y,var.width,var.height,semiTransparentRed);
                 }
+                for (const auto& coil : coils) coil->Draw();
             }
             EndMode2D();
         }else{
@@ -774,6 +807,7 @@ void Game::Draw() {
         for (auto& bomb : bombs) bomb->Draw();
         for (auto& blast : blasts) blast.Draw();
         for (const auto& enemy : enemies) enemy->Draw();
+        for (const auto& coil : coils) coil->Draw();
         if (player.IsActive()) player.Draw();
         if (player2.IsActive()) player2.Draw();
         EndMode2D();
@@ -1031,7 +1065,7 @@ void Game::AddBlasts1(Vector2 pos)
 {
     blasts.push_back(Blast(pos));
     blasts.back().SetTexture(resourceManager.GetTexture(2));
-    blasts.back().direction = 0;
+    blasts.back().direction = 4;
 
 }
 
@@ -1137,7 +1171,17 @@ void Game::AddBoss(Vector2 pos)
 {
     currentBoss = std::make_unique<MechaBlastX>(pos);
     currentBoss->SetTexture(resourceManager.GetTexture(17));
+    AddCoil({ 380, 425});
+    AddCoil({ 1400, 1025 });
+    AddCoil({ 2300, 425 });
+    
+}
 
+void Game::AddCoil(Vector2 pos)
+{
+    coils.push_back(std::make_unique<Coil>(pos));
+    coils.back()->SetTexture(resourceManager.GetTexture(19));
+    
 }
 
 int Game::CheckCollisions(Rectangle rec) {
@@ -1424,19 +1468,23 @@ void Game::PrepareBossAttack2()
 
 void Game::PrepareBossAttack3()
 {
-    // Centro del círculo (usamos la posición del jugador como ejemplo)
-    centerX = 1500 / CELL_SIZE;
-    centerY = 400 / CELL_SIZE;
+    if (propagationState == false) {
+        // Centro del círculo (usamos la posición del jugador como ejemplo)
+        centerX = 1500 / CELL_SIZE;
+        centerY = 400 / CELL_SIZE;
 
+        currentRadius = radius;
 
-    // Generamos el círculo inicial
-    CreateCircle(centerX, centerY, radius);
+        // Generamos el círculo inicial
+        CreateCircle(centerX, centerY, radius);
 
-    // Luego de crear el círculo, generamos los blasts en esa zona
-    BossAttack1();
+        // Luego de crear el círculo, generamos los blasts en esa zona
+        BossCoroutine(GetFrameTime());
 
-    // Propagación de los blasts (se expande después de cierto tiempo o de forma gradual)
-    StartBlastPropagation(centerX, centerY, radius);
+        propagationState = true;
+        attack1state = true;
+    }
+    
 
 }
 
@@ -1448,13 +1496,12 @@ void Game::BossAttack1()
         AddBlasts1(v);
     }
     
+    zoneMark.clear();
 
 }
 
 void Game::CreateCircle(int centerX, int centerY, int radius)
 {
-    // Limpiar las zonas marcadas anteriores
-    zoneMark.clear();
 
     // Iteramos sobre el mapa para marcar las celdas dentro del círculo
     for (int i = 0; i < 31; ++i) {  // Columnas
@@ -1464,26 +1511,17 @@ void Game::CreateCircle(int centerX, int centerY, int radius)
             int dy = j - centerY;
 
             // Si la celda está dentro del círculo (distancia al centro <= radio)
-            if ((dx * dx + dy * dy) <= (radius * radius)) {
+            float distanceSquared = dx * dx + dy * dy;
+            float radiusSquared = radius * radius;
+            if (distanceSquared >= radiusSquared - radius && distanceSquared <= radiusSquared + radius) {
                 float x = i * CELL_SIZE;
-                float y = j * CELL_SIZE + SCREEN_HEIGHT / 5 + 15;
+                float y = j * CELL_SIZE + SCREEN_HEIGHT / 5;
 
                 Rectangle r = { x, y, CELL_SIZE, CELL_SIZE };
                 zoneMark.emplace_back(r);
             }
         }
     }
-}
-
-void Game::StartBlastPropagation(int centerX, int centerY, int initialRadius)
-{
-    
-    expansionSpeed = 0.01f;
-    // Propagación en función del tiempo o frames
-    propagationTime = 0.0f;  // Tiempo acumulado
-
-    // Controlamos la propagación de los blasts
-    propagationState = true;
 }
 
 void Game::BossCoroutine(float time)

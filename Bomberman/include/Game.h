@@ -31,6 +31,7 @@ public:
     void AddBoss(Vector2 pos);
     void AddBlasts(Bomb bomb);
     void AddBlasts1(Vector2 pos);
+    void AddCoil(Vector2 pos);
     void ExplodeBombs();
     void ResetStage();
     int CheckCollisions(Rectangle rec);

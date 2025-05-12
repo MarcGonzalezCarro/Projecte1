@@ -50,6 +50,8 @@ void ResourceManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/Flecha.png")); //16
 
     textures.push_back(LoadTexture("resources/MechaBlastX.png")); //17
+    textures.push_back(LoadTexture("resources/EnergyShield.png")); //18
+    textures.push_back(LoadTexture("resources/Coil.png")); //19
 }
 
 void ResourceManager::LoadMusic() {
