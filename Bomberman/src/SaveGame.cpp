@@ -7,13 +7,16 @@
 #define FILENAME "resources/highscores.txt"
 
 // Implementación de SaveNameToFile
-void SaveGame::SaveNameToFile(const std::string& name, int score, int ballomKills, int onilKills, int dahlKills, int minvoKills, int doriaKills, int ovapeKills, int passKills, int pontanKills, int bombsPlanted, int softBlocksDestroyed, int powerUpsPicked, int fireUpCounter, int bombUpCounter, int speedUpCounter)
+void SaveGame::SaveNameToFile(const std::string& name, int score, int enemiesKilled, int ballomKills, int onilKills, int dahlKills, int minvoKills, int doriaKills, int ovapeKills, 
+    int passKills, int pontanKills, int bombsPlanted, int softBlocksDestroyed, int powerUpsPicked, int fireUpCounter, int bombUpCounter, int speedUpCounter, 
+    int flamePassCounter, int bombPassCounter, int InvincibleCounter, int remoteControlCounter, int wallPassCounter)
 {
     std::ofstream file(FILENAME, std::ios::app); // Abrir archivo en modo "append"
     if (file.is_open()) {
         // Escribir todos los datos en el archivo, separados por comas
         file << name << ","
             << score << ","
+            << enemiesKilled << ","
             << ballomKills << ","
             << onilKills << ","
             << dahlKills << ","
@@ -27,7 +30,12 @@ void SaveGame::SaveNameToFile(const std::string& name, int score, int ballomKill
             << powerUpsPicked << ","
             << fireUpCounter << ","
             << bombUpCounter << ","
-            << speedUpCounter
+            << speedUpCounter << ","
+            << flamePassCounter << ","
+            << bombPassCounter << ","
+            << InvincibleCounter << ","
+            << remoteControlCounter << ","
+            << wallPassCounter
             << std::endl;  // Añadir salto de línea al final de cada entrada
         file.close();
     }
@@ -46,15 +54,18 @@ std::vector<ScoreEntry> SaveGame::GetEntriesFromFile() {
         while (std::getline(file, line)) {
             std::stringstream ss(line);
             std::string name;
-            int score, ballomKills, onilKills, dahlKills, minvoKills, doriaKills, 
+            int score, enemiesKilled, ballomKills, onilKills, dahlKills, minvoKills, doriaKills,
                 ovapeKills, passKills, pontanKills, bombsPlanted, softBlocksDestroyed,
-                powerUpsPicked, fireUpCounter, bombUpCounter, speedUpCounter;
+                powerUpsPicked, fireUpCounter, bombUpCounter, speedUpCounter, flamePassCounter,
+                bombPassCounter, InvincibleCounter, remoteControlCounter, wallPassCounter;
 
             // Leer los datos del archivo, separados por comas
             std::getline(ss, name, ',');         // Nombre
             ss >> score;                         // Puntuación
             ss.ignore(1, ',');                   // Ignorar la coma después de la puntuación
 
+            ss >> enemiesKilled;                 // Kills de enemigos
+            ss.ignore(1, ','); 
             ss >> ballomKills;                   // Kills de Ballom
             ss.ignore(1, ',');
             ss >> onilKills;                     // Kills de Onil
@@ -82,12 +93,23 @@ std::vector<ScoreEntry> SaveGame::GetEntriesFromFile() {
             ss >> bombUpCounter;                 // Contador de Bomb Up
             ss.ignore(1, ',');
             ss >> speedUpCounter;                // Contador de Speed Up
+            ss.ignore(1, ',');
+            ss >> flamePassCounter;              // Contador de Flame Pass
+            ss.ignore(1, ',');
+            ss >> bombPassCounter;               // Contador de Bomb Pass
+            ss.ignore(1, ',');
+            ss >> InvincibleCounter;             // Contador de Invincible
+            ss.ignore(1, ',');
+            ss >> remoteControlCounter;          // Contador de Remote Control
+            ss.ignore(1, ',');
+            ss >> wallPassCounter;               // Contador de Wall Pass
 
             // Crear un objeto ScoreEntry y agregarlo al vector
-            entries.push_back(ScoreEntry(name, score, ballomKills, onilKills, dahlKills, minvoKills, doriaKills,
+            entries.push_back(ScoreEntry(name, score, enemiesKilled, ballomKills, onilKills, dahlKills, minvoKills, doriaKills,
                 ovapeKills, passKills, pontanKills, bombsPlanted,
                 softBlocksDestroyed, powerUpsPicked, fireUpCounter,
-                bombUpCounter, speedUpCounter));
+                bombUpCounter, speedUpCounter, flamePassCounter, bombPassCounter, InvincibleCounter,
+                remoteControlCounter, wallPassCounter));
         }
         file.close();
     }
@@ -106,6 +128,7 @@ void SaveGame::SaveEntriesToFile(const std::vector<ScoreEntry>& entries) {
         for (const auto& entry : entries) {
             file << entry.name << ","
                 << entry.score << ","
+                << entry.enemiesKilled << ","
                 << entry.ballomKills << ","
                 << entry.onilKills << ","
                 << entry.dahlKills << ","
@@ -119,7 +142,12 @@ void SaveGame::SaveEntriesToFile(const std::vector<ScoreEntry>& entries) {
                 << entry.powerUpsPicked << ","
                 << entry.fireUpCounter << ","
                 << entry.bombUpCounter << ","
-                << entry.speedUpCounter
+                << entry.speedUpCounter << ","
+                << entry.flamePassCounter << ","
+                << entry.bombPassCounter << ","
+                << entry.InvincibleCounter << ","
+                << entry.remoteControlCounter << ","
+                << entry.wallPassCounter
                 << std::endl;  // Añadir salto de línea al final de cada entrada
         }
         file.close();

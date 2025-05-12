@@ -37,6 +37,7 @@ public:
     int CheckPlayerCollisions(Rectangle rec);
     bool IsBlastBlocked(Vector2 position);
     bool CheckBlastDamage(Vector2 pos);
+    bool CheckPlayerBlastDamage(Vector2 pos);
     void GameOver();
     void NextLevel();
     void ShowStageScreen(const char* stageText);

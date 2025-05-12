@@ -59,7 +59,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 5;
+int currentStage = 1;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -100,6 +100,7 @@ Color semiTransparentRed = Color{ 255, 0, 0, 80};
 ////////////////////////////
 //FOR STATS
 ////////////////////////////
+int enemiesKilled = 0;
 int ballomKills = 0;
 int onilKills = 0;
 int dahlKills = 0;
@@ -114,6 +115,11 @@ int powerUpsPicked = 0;
 int fireUpCounter = 0;
 int bombUpCounter = 0;
 int speedUpCounter = 0;
+int flamePassCounter = 0;
+int bombPassCounter = 0;
+int InvincibleCounter = 0;
+int remoteControlCounter = 0;
+int wallPassCounter = 0;
 ////////////////////////////
 
 Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYER_X,INITIAL_PLAYER_Y), onBomb(false) {
@@ -138,7 +144,7 @@ void Game::Run() {
     player2.SetTexture(resourceManager.GetTexture(1));
     player2.SetDirection({ 1, 0 });
     
-
+    srand(static_cast<unsigned int>(time(nullptr)));
     AddBoss({1400,400});
 
     while (!WindowShouldClose()) {
@@ -267,7 +273,7 @@ void Game::Run() {
                 playerName[nameLength] = '\0';
             }
             if (IsKeyPressed(KEY_ENTER)) {
-                SaveGame::SaveNameToFile(playerName, playerScore, ballomKills, onilKills, dahlKills, minvoKills, doriaKills, ovapeKills, passKills, pontanKills, bombsPlanted,softBlocksDestroyed,powerUpsPicked,fireUpCounter,bombUpCounter,speedUpCounter);
+                SaveGame::SaveNameToFile(playerName, playerScore, enemiesKilled, ballomKills, onilKills, dahlKills, minvoKills, doriaKills, ovapeKills, passKills, pontanKills, bombsPlanted,softBlocksDestroyed,powerUpsPicked,fireUpCounter,bombUpCounter,speedUpCounter, flamePassCounter, bombPassCounter, InvincibleCounter, remoteControlCounter, wallPassCounter);
                 entries = SaveGame::GetEntriesFromFile();
 
                 std::sort(entries.begin(), entries.end(), [](const ScoreEntry& a, const ScoreEntry& b) {
@@ -393,7 +399,7 @@ void Game::Update() {
         }
     }
 
-    if (CheckBlastDamage(playerPos)) {
+    if (CheckPlayerBlastDamage(playerPos)) {
         if(!player.IsDead()){
             PlaySound(resourceManager.GetSound(4));
             if (INVINCIBLE == false) {
@@ -504,7 +510,7 @@ void Game::Update() {
             }
         }
 
-        if (CheckBlastDamage(playerPos2)) {
+        if (CheckPlayerBlastDamage(playerPos2)) {
             if (!player2.IsDead()) {
                 PlaySound(resourceManager.GetSound(4));
                 if (INVINCIBLE == false) {
@@ -598,27 +604,35 @@ void Game::Update() {
             {
             case 0:
                 ballomKills++;
+                enemiesKilled++;
                 break;
             case 1:
                 onilKills++;
+                enemiesKilled++;
                 break;
             case 2:
                 dahlKills++;
+                enemiesKilled++;
                 break;
             case 3:
                 minvoKills++;
+                enemiesKilled++;
                 break;
             case 4:
                 doriaKills++;
+                enemiesKilled++;
                 break;
             case 5:
                 ovapeKills++;
+                enemiesKilled++;
                 break;
             case 6:
                 passKills++;
+                enemiesKilled++;
                 break;
             case 7:
                 pontanKills++;
+                enemiesKilled++;
                 break;
             default:
                 break;
@@ -840,24 +854,30 @@ void Game::Draw() {
             const ScoreEntry& selectedEntry = entries[topScoreChoice];
 
             // Mostrar el nombre y el puntaje del jugador seleccionado
-            DrawText(("Name: " + selectedEntry.name).c_str(), 800, 100, 30, WHITE);
-            DrawText(("Score: " + std::to_string(selectedEntry.score)).c_str(), 800, 150, 30, WHITE);
+            DrawText(("Name: " + selectedEntry.name).c_str(), 850, 100, 30, WHITE);
+            DrawText(("Score: " + std::to_string(selectedEntry.score)).c_str(), 850, 150, 30, WHITE);
 
             // Mostrar las estadísticas del jugador
-            DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 800, 200, 30, WHITE);
-            DrawText(("Onil Kills: " + std::to_string(selectedEntry.onilKills)).c_str(), 800, 250, 30, WHITE);
-            DrawText(("Dahl Kills: " + std::to_string(selectedEntry.dahlKills)).c_str(), 800, 300, 30, WHITE);
-            DrawText(("Minvo Kills: " + std::to_string(selectedEntry.minvoKills)).c_str(), 800, 350, 30, WHITE);
-            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 800, 400, 30, WHITE);
-            DrawText(("Ovape Kills: " + std::to_string(selectedEntry.ovapeKills)).c_str(), 800, 450, 30, WHITE);
-            DrawText(("Pass Kills: " + std::to_string(selectedEntry.passKills)).c_str(), 800, 500, 30, WHITE);
-            DrawText(("Pontan Kills: " + std::to_string(selectedEntry.pontanKills)).c_str(), 800, 550, 30, WHITE);
-            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 800, 600, 30, WHITE);
-            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 800, 650, 30, WHITE);
-            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 800, 700, 30, WHITE);
-            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 850, 750, 30, WHITE);
-            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 850, 800, 30, WHITE);
-            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 850, 850, 30, WHITE);
+            DrawText(("Enemies Killed: " + std::to_string(selectedEntry.enemiesKilled)).c_str(), 600, 200, 30, WHITE);
+            DrawText(("Ballom Kills: " + std::to_string(selectedEntry.ballomKills)).c_str(), 600, 250, 30, WHITE);
+            DrawText(("Onil Kills: " + std::to_string(selectedEntry.onilKills)).c_str(), 600, 300, 30, WHITE);
+            DrawText(("Dahl Kills: " + std::to_string(selectedEntry.dahlKills)).c_str(), 600, 350, 30, WHITE);
+            DrawText(("Minvo Kills: " + std::to_string(selectedEntry.minvoKills)).c_str(), 600, 400, 30, WHITE);
+            DrawText(("Doria Kills: " + std::to_string(selectedEntry.doriaKills)).c_str(), 600, 450, 30, WHITE);
+            DrawText(("Ovape Kills: " + std::to_string(selectedEntry.ovapeKills)).c_str(), 600, 500, 30, WHITE);
+            DrawText(("Pass Kills: " + std::to_string(selectedEntry.passKills)).c_str(), 600, 550, 30, WHITE);
+            DrawText(("Pontan Kills: " + std::to_string(selectedEntry.pontanKills)).c_str(), 600, 600, 30, WHITE);
+            DrawText(("Bombs Planted: " + std::to_string(selectedEntry.bombsPlanted)).c_str(), 850, 650, 30, WHITE);
+            DrawText(("Soft Blocks Destroyed: " + std::to_string(selectedEntry.softBlocksDestroyed)).c_str(), 850, 700, 30, WHITE);
+            DrawText(("Power-Ups Picked: " + std::to_string(selectedEntry.powerUpsPicked)).c_str(), 1100, 200, 30, WHITE);
+            DrawText(("Fire-Up Counter: " + std::to_string(selectedEntry.fireUpCounter)).c_str(), 1150, 250, 30, WHITE);
+            DrawText(("Bomb-Up Counter: " + std::to_string(selectedEntry.bombUpCounter)).c_str(), 1150, 300, 30, WHITE);
+            DrawText(("Speed-Up Counter: " + std::to_string(selectedEntry.speedUpCounter)).c_str(), 1150, 350, 30, WHITE);
+            DrawText(("Flame-Pass Counter: " + std::to_string(selectedEntry.flamePassCounter)).c_str(), 1150, 400, 30, WHITE);
+            DrawText(("Bomb-Pass Picked: " + std::to_string(selectedEntry.bombPassCounter)).c_str(), 1150, 450, 30, WHITE);
+            DrawText(("Invincible Counter: " + std::to_string(selectedEntry.InvincibleCounter)).c_str(), 1150, 500, 30, WHITE);
+            DrawText(("Remote-Control Counter: " + std::to_string(selectedEntry.remoteControlCounter)).c_str(), 1150, 550, 30, WHITE);
+            DrawText(("Wall-Pass Counter: " + std::to_string(selectedEntry.wallPassCounter)).c_str(), 1150, 600, 30, WHITE);
 
             // Volver al menú principal o salir
             DrawText("Back", 140, 700, 40, WHITE);
@@ -1027,7 +1047,7 @@ bool Game::IsBlastBlocked(Vector2 position) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
             
             if (it->GetBound().x != exits.back().GetBound().x || it->GetBound().y != exits.back().GetBound().y) {
-                int ran = std::rand() % 20;
+                int ran = std::rand() % 8;
                 if (ran == 1) {
                     powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
                     powerups.back()->SetTexture(resourceManager.GetTexture(13));
@@ -1058,11 +1078,6 @@ bool Game::IsBlastBlocked(Vector2 position) {
                 }
                 if (ran == 8) {
                     powerups.push_back(std::make_unique<RemoteControl>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                else
-                {
-                    powerups.push_back(std::make_unique<Invincible>((*it).GetBound().x, (*it).GetBound().y));
                     powerups.back()->SetTexture(resourceManager.GetTexture(13));
                 }
             }
@@ -1110,7 +1125,7 @@ void Game::AddEnemy(Vector2 pos) {
         enemies.back()->SetTexture(resourceManager.GetTexture(10));
         enemies.back()->SetSpeed(1.8f);
     }
-    else{
+    else if (ran == 7){
         enemies.push_back(std::make_unique<Pontan>(pos)); // Crear y agregar Pontan
         enemies.back()->SetTexture(resourceManager.GetTexture(11));
         enemies.back()->SetSpeed(2.0f);
@@ -1198,6 +1213,21 @@ void Game::CheckPowerUPCollision(Rectangle rec) {
             case 2:
                 speedUpCounter++;
                 break;
+            case 3:
+                flamePassCounter++;
+                break;
+            case 4:
+                bombPassCounter++;
+                break;
+            case 5:
+                InvincibleCounter++;
+                break;
+            case 6:
+                remoteControlCounter++;
+                break;
+            case 7:
+                wallPassCounter++;
+                break;
             default:
                 break;
             }
@@ -1217,8 +1247,22 @@ bool Game::CheckBlastDamage(Vector2 pos) {
         Rectangle r = {blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20};
         if (CheckCollisionRecs(rec, r)) { 
             printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x,rec.y);
-            //printf("El rectangulo esta en: %f,%f y mide: %d,%d", blast.position.x,blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20);
             return true; 
+        }
+    }
+    return false;
+}
+
+bool Game::CheckPlayerBlastDamage(Vector2 pos) {
+    if (!PUFP)
+    {
+        Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE };
+        for (const auto& blast : blasts) {
+            Rectangle r = { blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20 };
+            if (CheckCollisionRecs(rec, r)) {
+                printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x, rec.y);
+                return true;
+            }
         }
     }
     return false;

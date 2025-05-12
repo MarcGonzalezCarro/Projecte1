@@ -6,5 +6,5 @@ FlamePass::FlamePass(float x, float y) : PowerUp(x, y) {
 }
 
 void FlamePass::Effect(){
-    MAX_BOMBS++;
+    PUFP = true;
 }

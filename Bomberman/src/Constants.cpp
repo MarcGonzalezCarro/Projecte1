@@ -15,4 +15,5 @@ int BOMB_RANGE = 1;
 int MAX_BOMBS = 1;
 int PLAYER_SPEED = 4;
 bool PUWP = false;
+bool PUFP = false;
 bool INVINCIBLE = false;
