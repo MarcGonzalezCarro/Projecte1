@@ -13,6 +13,8 @@ Blast::Blast(Vector2 pos) {
     framesCounter = 0;
     framesSpeed = 6;
 
+    fromBoss = false;
+
     // Expansión de la explosión
     affectedTiles.push_back(position);
     
@@ -109,4 +111,9 @@ void Blast::SetDirection(int dir) {
 }
 void Blast::SetFinal(bool status) {
     finalB = status;
+}
+
+void Blast::SetFromBoss(bool status)
+{
+    fromBoss = status;
 }

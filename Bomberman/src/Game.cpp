@@ -24,6 +24,7 @@
 #include "Bomb.h"
 #include "Exit.h"
 #include "Coil.h"
+#include "EnergyShield.h"
 #include "SaveGame.h"
 #include "ResourceManager.h"
 #include <sstream>
@@ -60,7 +61,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 1;
+int currentStage = 5;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -70,6 +71,8 @@ std::vector<Exit> exits;
 
 std::unique_ptr<Boss> currentBoss;
 std::vector<std::unique_ptr<Coil>> coils;
+std::unique_ptr<EnergyShield> energyShield;
+
 float bossAttackCooldown = 5.0f;
 float zoneMarkCooldown = 2.0f;
 bool attack1state = false;
@@ -80,6 +83,8 @@ int radius = 3;
 float maxRadius = 6;
 int centerX, centerY;
 bool propagationState;
+int currentCoils = 3;
+int currentPhase = 1;
 std::vector<Rectangle> zoneMark;
 
 Music menuSong;
@@ -145,13 +150,7 @@ void Game::Run() {
     player.SetDirection({ 1, 0 });
     player2.SetTexture(resourceManager.GetTexture(1));
     player2.SetDirection({ 1, 0 });
-<<<<<<< Updated upstream
-    
-    srand(static_cast<unsigned int>(time(nullptr)));
-=======
 
-
->>>>>>> Stashed changes
     AddBoss({1400,400});
 
 
@@ -582,6 +581,14 @@ void Game::Update() {
         }
     }
     for (auto it = coils.begin(); it != coils.end(); ) {
+        if (coils.size() > 0) {
+            if ((*it)->IsDead() == false) {
+                if (CheckBlastDamage({ ((*it)->GetPosition().x / CELL_SIZE) * CELL_SIZE, (((*it)->GetPosition().y + 200) / CELL_SIZE) * CELL_SIZE})) {
+                    (*it)->Die(); // Llama a Die()
+                    currentCoils--;
+                }
+            }
+        }
         (*it)->Update(GetFrameTime());
          ++it;        
     }
@@ -677,8 +684,13 @@ void Game::Update() {
         
         int attackType = 0;
         if (attack1state == false) {
-            if (propagationState == false) {
-                attackType = rand() % 3;  // Número aleatorio entre 0 y 2
+            if (currentPhase == 2) {
+                if (propagationState == false) {
+                    attackType = rand() % 3;  // Número aleatorio entre 0 y 2
+                }
+                else {
+                    attackType = 0;
+                }
             }
             else {
                 attackType = 0;
@@ -726,6 +738,11 @@ void Game::Update() {
         }
     }
 
+    if (currentCoils <= 0) {
+        currentPhase = 2;
+        energyShield.reset();
+    }
+
     elapsedTime = GetTime() - startTime;
     remainingTime = targetTime - elapsedTime;
 }
@@ -754,8 +771,8 @@ void Game::Draw() {
             camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
 
             BeginMode2D(camera1);
-            ClearBackground(DARKGREEN);
-            DrawRectangle(0, 0, 4000, 250, GRAY);
+            ClearBackground(GRAY);
+            DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
             for (auto& wall : walls) wall.Draw();
             for (auto& exit : exits) exit.Draw();
             for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -772,6 +789,9 @@ void Game::Draw() {
                     DrawRectangle(var.x,var.y,var.width,var.height,semiTransparentRed);
                 }
                 for (const auto& coil : coils) coil->Draw();
+                if (currentPhase == 1) {
+                    energyShield->Draw();
+                }
             }
             EndMode2D();
         }else{
@@ -798,8 +818,8 @@ void Game::Draw() {
         // Dibujo con cámara 1 (jugador 1)
         BeginScissorMode(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado izquierdo
         BeginMode2D(camera1);
-        ClearBackground(DARKGREEN);
-        DrawRectangle((0) , (0), 4000, 250 , GRAY);
+        ClearBackground(GRAY);
+        DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
         for (auto& wall : walls) wall.Draw();
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -810,6 +830,17 @@ void Game::Draw() {
         for (const auto& coil : coils) coil->Draw();
         if (player.IsActive()) player.Draw();
         if (player2.IsActive()) player2.Draw();
+        if (currentStage == 5) {
+            currentBoss->Draw();
+            for each (Rectangle var in zoneMark)
+            {
+                DrawRectangle(var.x, var.y, var.width, var.height, semiTransparentRed);
+            }
+            for (const auto& coil : coils) coil->Draw();
+            if (currentPhase == 1) {
+                energyShield->Draw();
+            }
+        }
         EndMode2D();
         EndScissorMode();
 
@@ -817,8 +848,8 @@ void Game::Draw() {
         
             BeginScissorMode(SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado derecho
             BeginMode2D(camera2);
-            ClearBackground(DARKGREEN);
-            DrawRectangle(0, 0, 4000, 250 , GRAY);
+            ClearBackground(GRAY);
+            DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
             for (auto& wall : walls) wall.Draw();
             for (auto& exit : exits) exit.Draw();
             for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -828,6 +859,17 @@ void Game::Draw() {
             for (const auto& enemy : enemies) enemy->Draw();
             if (player.IsActive()) player.Draw();
             if (player2.IsActive()) player2.Draw();
+            if (currentStage == 5) {
+                currentBoss->Draw();
+                for each (Rectangle var in zoneMark)
+                {
+                    DrawRectangle(var.x, var.y, var.width, var.height, semiTransparentRed);
+                }
+                for (const auto& coil : coils) coil->Draw();
+                if (currentPhase == 1) {
+                    energyShield->Draw();
+                }
+            }
             EndMode2D();
             EndScissorMode();
         }
@@ -981,6 +1023,10 @@ void Game::AddWalls() {
     else {
         for (int i = 0; i < 31; i++) {
             for (int j = 0; j < 13; j++) {
+                if (i == 6 && j == 4) continue;
+                if (i == 24 && j == 4) continue;
+                if (i == 14 && j == 10) continue;
+                if (i == 16 && j == 10) continue;
                 if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
                     if (i % 2 == 0 && j % 2 == 0 && (i <= 11 || i >= 19 || j >= 5)) {
                         walls.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
@@ -1066,6 +1112,7 @@ void Game::AddBlasts1(Vector2 pos)
     blasts.push_back(Blast(pos));
     blasts.back().SetTexture(resourceManager.GetTexture(2));
     blasts.back().direction = 4;
+    blasts.back().SetFromBoss(true);
 
 }
 
@@ -1171,9 +1218,10 @@ void Game::AddBoss(Vector2 pos)
 {
     currentBoss = std::make_unique<MechaBlastX>(pos);
     currentBoss->SetTexture(resourceManager.GetTexture(17));
-    AddCoil({ 380, 425});
-    AddCoil({ 1400, 1025 });
-    AddCoil({ 2300, 425 });
+    AddCoil({ 580, 425});
+    AddCoil({ 1480, 1025 });
+    AddCoil({ 2380, 425 });
+    AddEnergyShield({ 1400, 400 });
     
 }
 
@@ -1182,6 +1230,12 @@ void Game::AddCoil(Vector2 pos)
     coils.push_back(std::make_unique<Coil>(pos));
     coils.back()->SetTexture(resourceManager.GetTexture(19));
     
+}
+
+void Game::AddEnergyShield(Vector2 pos)
+{
+    energyShield = std::make_unique<EnergyShield>(pos);
+    energyShield->SetTexture(resourceManager.GetTexture(18));
 }
 
 int Game::CheckCollisions(Rectangle rec) {
@@ -1300,7 +1354,7 @@ bool Game::CheckBlastDamage(Vector2 pos) {
 bool Game::CheckPlayerBlastDamage(Vector2 pos) {
     if (!PUFP)
     {
-        Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE };
+        Rectangle rec = { pos.x, pos.y, CELL_SIZE - 10, CELL_SIZE - 10};
         for (const auto& blast : blasts) {
             Rectangle r = { blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20 };
             if (CheckCollisionRecs(rec, r)) {

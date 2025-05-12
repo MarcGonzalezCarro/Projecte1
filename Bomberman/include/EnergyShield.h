@@ -1,21 +1,21 @@
-#ifndef COIL_H
-#define COIL_H
+#ifndef ENERGYSHIELD_H
+#define ENERGYSHIELD_H
 
 #include "raylib.h"
 #include "SoftBlock.h"
 #include <vector>
 
-class Coil {
+class EnergyShield {
 public:
-    Coil(Vector2 startPosition); // Constructor
+    EnergyShield(Vector2 startPosition); // Constructor
     int id;
-    virtual ~Coil(); // Destructor virtual para herencia
+    virtual ~EnergyShield(); // Destructor virtual para herencia
 
     void Update(float deltaTime); // Actualización del enemigo (movimientos, lógica)
     void Draw() const;         // Dibuja el enemigo en pantalla
 
     void SetPosition(Vector2 newPosition); // Establecer posición
-    Vector2 GetPosition() const; // Obtener la posición actual
+
     void SetTexture(Texture2D newTexture);
 
     bool IsActive();

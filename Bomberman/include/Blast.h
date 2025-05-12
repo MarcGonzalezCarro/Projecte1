@@ -16,6 +16,7 @@ public:
     int framesCounter;
     int framesSpeed;
     int currentFrame;
+    bool fromBoss;
     std::vector<Vector2> affectedTiles; // Lista de celdas afectadas
     Texture2D texture;
 
@@ -27,6 +28,7 @@ public:
     void SetTexture(Texture2D texture);
     void SetDirection(int direction);
     void SetFinal(bool status);
+    void SetFromBoss(bool status);
 };
 
 

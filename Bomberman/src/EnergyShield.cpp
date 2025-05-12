@@ -1,9 +1,9 @@
-#include "Coil.h"
+#include "EnergyShield.h"
 #include <iostream>
 #include "raylib.h"
 #include "Constants.h"
 
-Coil::Coil(Vector2 startPosition)
+EnergyShield::EnergyShield(Vector2 startPosition)
     : position(startPosition), framecounter(120)// Velocidad predeterminada
 {
     currentFrame = 0;
@@ -13,9 +13,9 @@ Coil::Coil(Vector2 startPosition)
     isActive = true;
 }
 
-Coil::~Coil() {}
+EnergyShield::~EnergyShield() {}
 
-void Coil::Update(float deltaTime) {
+void EnergyShield::Update(float deltaTime) {
     if (!isDead) {
         framecounter -= deltaTime;
         
@@ -43,18 +43,18 @@ void Coil::Update(float deltaTime) {
 }
 
 
-void Coil::Draw() const {
+void EnergyShield::Draw() const {
     // Dibujar el coil 
     Vector2 v = { position.x, position.y };
-    Rectangle source = { 0, 0, 32, 68 };
-    Rectangle dest = { (position.x ), (position.y ), 32 * 4.3f , 68 * 4.3f };
+    Rectangle source = { 0, 0, 30, 30 };
+    Rectangle dest = { (position.x ), (position.y ), 30 * 8 , 30 * 8 };
     Vector2 v2 = { 1, 1 };
     if (isDead == false) {
         
         source.x = (32 * currentFrame);
     }
     else {
-        source.x = (32 * 4);
+        source.x = (32 * 5 + 32 * currentFrame);
     }
     
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
@@ -62,32 +62,27 @@ void Coil::Draw() const {
 }
 
 
-void Coil::SetPosition(Vector2 newPosition) {
+void EnergyShield::SetPosition(Vector2 newPosition) {
     position = newPosition;
 }
 
-Vector2 Coil::GetPosition() const
-{
-    return position;
-}
-
-void Coil::SetTexture(Texture2D newTexture) {
+void EnergyShield::SetTexture(Texture2D newTexture) {
     texture = newTexture;
 }
 
 
 
-void Coil::Die() {
+void EnergyShield::Die() {
     isDead = true;
     currentFrame = 0;
 }
 
 
-bool Coil::IsActive()
+bool EnergyShield::IsActive()
 {
     return isActive;
 }
-bool Coil::IsDead()
+bool EnergyShield::IsDead()
 {
     return isDead;
 }
