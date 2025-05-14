@@ -27,7 +27,7 @@ public:
     void Draw();
     void AddWalls();
     void AddBomb(float x, float y);
-    void AddEnemy(Vector2 pos);
+    void AddEnemy(Vector2 pos, int enemyType);
     void AddBoss(Vector2 pos);
     void AddBlasts(Bomb bomb);
     void AddBlasts1(Vector2 pos);

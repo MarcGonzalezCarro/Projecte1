@@ -10,6 +10,7 @@
 #include "Ovape.h"
 #include "Pass.h"
 #include "Pontan.h"
+#include "Customizer.h"
 #include "BossBase.h"
 #include "MechaBlastX.h"
 #include "PowerUp.h"
@@ -33,7 +34,7 @@
 #include <raymath.h>
 
 
-
+Customizer customizer;
 ResourceManager resourceManager;
 Texture2D initialScreen;
 Texture2D arrowTexture;
@@ -61,7 +62,7 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
-int currentStage = 5;
+int currentStage = 1;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -139,6 +140,7 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     menuSong = resourceManager.GetMusic(0);
     gameSong = resourceManager.GetMusic(1);
     specialGameSong = resourceManager.GetMusic(2);
+    customizer.LoadFromFile("resources/customization.txt");
     startTime = GetTime();
     targetTime = 200.0;
     
@@ -676,73 +678,73 @@ void Game::Update() {
         }
         ++it; 
     }
-    
-    currentBoss->Update(GetFrameTime(), walls, softBlocks);
+    if (currentStage == 5) {
+        currentBoss->Update(GetFrameTime(), walls, softBlocks);
 
-    bossAttackCooldown -= GetFrameTime();
-    if (bossAttackCooldown <= 0) {
-        
-        int attackType = 0;
-        if (attack1state == false) {
-            if (currentPhase == 2) {
-                if (propagationState == false) {
-                    attackType = rand() % 3;  // Número aleatorio entre 0 y 2
+        bossAttackCooldown -= GetFrameTime();
+        if (bossAttackCooldown <= 0) {
+
+            int attackType = 0;
+            if (attack1state == false) {
+                if (currentPhase == 2) {
+                    if (propagationState == false) {
+                        attackType = rand() % 3;  // Número aleatorio entre 0 y 2
+                    }
+                    else {
+                        attackType = 0;
+                    }
                 }
                 else {
                     attackType = 0;
                 }
-            }
-            else {
-                attackType = 0;
-            }
-            switch (attackType) {
-            case 0:
-                PrepareBossAttack1();
-                break;
-            case 1:
-                PrepareBossAttack2();
-                break;
-            case 2:
-                PrepareBossAttack3();
-                break;
-            }
+                switch (attackType) {
+                case 0:
+                    PrepareBossAttack1();
+                    break;
+                case 1:
+                    PrepareBossAttack2();
+                    break;
+                case 2:
+                    PrepareBossAttack3();
+                    break;
+                }
 
-            currentBoss->isAttacking = true;
-            bossAttackCooldown = 3.0f;
-        }
-    }
-    if (attack1state == true) {
-        BossCoroutine(GetFrameTime());
-
-    }
-   
-    if (propagationState) {
-        propagationTime += GetFrameTime();;
-
-        // Si ha pasado el tiempo necesario para expandir
-        if (propagationTime >= expansionSpeed) {
-            propagationTime = 0.0f;  // Resetear el tiempo
-
-            // Aumentamos el radio
-            currentRadius += 1;
-            
-            // Re-creamos el círculo y los blasts en la nueva zona
-            CreateCircle(centerX, centerY, currentRadius);
-            
-            attack1state = true;
-
-            // Si el radio ha alcanzado el máximo, terminamos la propagación
-            if (currentRadius >= maxRadius) {
-                propagationState = false;
+                currentBoss->isAttacking = true;
+                bossAttackCooldown = 3.0f;
             }
         }
-    }
+        if (attack1state == true) {
+            BossCoroutine(GetFrameTime());
 
-    if (currentCoils <= 0) {
-        currentPhase = 2;
-        energyShield.reset();
-    }
+        }
 
+        if (propagationState) {
+            propagationTime += GetFrameTime();;
+
+            // Si ha pasado el tiempo necesario para expandir
+            if (propagationTime >= expansionSpeed) {
+                propagationTime = 0.0f;  // Resetear el tiempo
+
+                // Aumentamos el radio
+                currentRadius += 1;
+
+                // Re-creamos el círculo y los blasts en la nueva zona
+                CreateCircle(centerX, centerY, currentRadius);
+
+                attack1state = true;
+
+                // Si el radio ha alcanzado el máximo, terminamos la propagación
+                if (currentRadius >= maxRadius) {
+                    propagationState = false;
+                }
+            }
+        }
+
+        if (currentCoils <= 0) {
+            currentPhase = 2;
+            energyShield.reset();
+        }
+    }
     elapsedTime = GetTime() - startTime;
     remainingTime = targetTime - elapsedTime;
 }
@@ -995,14 +997,10 @@ void Game::AddWalls() {
                     }
                     else {
                         if (GetRandomValue(1, 4) == 1) {
-                            if (GetRandomValue(1, 4) == 1) {
-                                Vector2 v = { i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5 };
-                                AddEnemy(v);
-                            }
-                            else {
-                                softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
-                                softBlocks.back().SetTexture(resourceManager.GetTexture(12));
-                            }
+                            
+                            softBlocks.emplace_back(i * CELL_SIZE, j * CELL_SIZE + SCREEN_HEIGHT / 5);
+                            softBlocks.back().SetTexture(resourceManager.GetTexture(12));
+                            
                         }
                     }
                 }
@@ -1019,6 +1017,55 @@ void Game::AddWalls() {
         exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
         exits.back().SetTexture(resourceManager.GetTexture(14));
         printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
+
+        std::vector<Vector2> emptyPositions;
+
+        for (int i = 1; i < 31 - 1; i++) {
+            for (int j = 1; j < 13 - 1; j++) {
+                // Evitar esquinas seguras, como hacías antes
+                if (i <= 3 && j <= 3) continue;
+                // Evitar muros sólidos
+                if (i % 2 == 0 && j % 2 == 0) continue;
+
+                Vector2 pos = { (float)(i * CELL_SIZE), (float)(j * CELL_SIZE + SCREEN_HEIGHT / 5) };
+                emptyPositions.push_back(pos);
+            }
+        }
+
+        auto isOccupied = [&](const Vector2& pos) {
+            for (const auto& wall : walls)
+                if (CheckCollisionRecs(wall.GetBound(), { pos.x, pos.y, (float)CELL_SIZE,  (float)CELL_SIZE }))
+                    return true;
+
+            for (const auto& block : softBlocks)
+                if (CheckCollisionRecs(block.GetBound(), { pos.x, pos.y,  (float)CELL_SIZE,  (float)CELL_SIZE }))
+                    return true;
+
+            for (const auto& exit : exits)
+                if (CheckCollisionRecs(exit.GetBound(), { pos.x, pos.y,  (float)CELL_SIZE,  (float)CELL_SIZE }))
+                    return true;
+
+            return false;
+        };
+
+        // Eliminar posiciones ocupadas
+        emptyPositions.erase(
+            std::remove_if(emptyPositions.begin(), emptyPositions.end(), isOccupied),
+            emptyPositions.end()
+        );
+
+        for (int enemyType = 0; enemyType < 8; ++enemyType) {
+            int count = customizer.GetEnemyCounter(currentStage, enemyType);
+
+            for (int i = 0; i < count && !emptyPositions.empty(); ++i) {
+                int index = GetRandomValue(0, emptyPositions.size() - 1);
+                Vector2 pos = emptyPositions[index];
+
+                AddEnemy(pos, enemyType); // <- tu método personalizado
+
+                emptyPositions.erase(emptyPositions.begin() + index); // eliminar posición usada
+            }
+        }
     }
     else {
         for (int i = 0; i < 31; i++) {
@@ -1043,6 +1090,7 @@ void Game::AddWalls() {
     }
    
 }
+
 
 void Game::AddBomb(float x, float y) {
     
@@ -1171,48 +1219,63 @@ bool Game::IsBlastBlocked(Vector2 position) {
     return false;  // No Blockeado :D
 }
 
-void Game::AddEnemy(Vector2 pos) {
-    int ran = std::rand() % 20;
-    if (ran == 0) {
+void Game::AddEnemy(Vector2 pos, int enemyType) {
+    switch (enemyType) {
+    case 0:
         enemies.push_back(std::make_unique<Ballom>(pos)); // Crear y agregar Ballom
         enemies.back()->SetTexture(resourceManager.GetTexture(4));
-    }
-    else if (ran == 1) {
+        printf("Ballom");
+        break;
+
+    case 1:
         enemies.push_back(std::make_unique<Onil>(pos)); // Crear y agregar Onil
         enemies.back()->SetTexture(resourceManager.GetTexture(5));
         enemies.back()->SetSpeed(1.3f);
-    }
-    else if (ran == 2) {
+        break;
+
+    case 2:
         enemies.push_back(std::make_unique<Dahl>(pos)); // Crear y agregar Dahl
         enemies.back()->SetTexture(resourceManager.GetTexture(6));
         enemies.back()->SetSpeed(1.3f);
-    }
-    else if (ran == 3) {
+        break;
+
+    case 3:
         enemies.push_back(std::make_unique<Minvo>(pos)); // Crear y agregar Minvo
         enemies.back()->SetTexture(resourceManager.GetTexture(7));
         enemies.back()->SetSpeed(1.5f);
-    }
-    else if (ran == 4) {
+        break;
+
+    case 4:
         enemies.push_back(std::make_unique<Doria>(pos)); // Crear y agregar Doria
         enemies.back()->SetTexture(resourceManager.GetTexture(8));
         enemies.back()->SetSpeed(0.6f);
-    }
-    else if (ran == 5) {
+        break;
+
+    case 5:
         enemies.push_back(std::make_unique<Ovape>(pos)); // Crear y agregar Ovape
         enemies.back()->SetTexture(resourceManager.GetTexture(9));
-    }
-    else if (ran == 6) {
+        break;
+
+    case 6:
         enemies.push_back(std::make_unique<Pass>(pos)); // Crear y agregar Pass
         enemies.back()->SetTexture(resourceManager.GetTexture(10));
         enemies.back()->SetSpeed(1.8f);
-    }
-    else if (ran == 7){
+        break;
+
+    case 7:
         enemies.push_back(std::make_unique<Pontan>(pos)); // Crear y agregar Pontan
         enemies.back()->SetTexture(resourceManager.GetTexture(11));
         enemies.back()->SetSpeed(2.0f);
+        break;
+
+    default:
+        std::cerr << "Tipo de enemigo no válido: " << enemyType << std::endl;
+        break;
     }
+
     enemyCounter++;
 }
+
 
 void Game::AddBoss(Vector2 pos)
 {
