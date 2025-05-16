@@ -64,6 +64,15 @@ Vector2 arrowPositions[] = {
     {840, 720}
 };
 
+struct ScoreEnemies
+{
+    Texture2D textura;
+    Vector2 pos;
+    int id;
+};
+
+std::vector<std::unique_ptr<ScoreEnemies>> scores;
+
 int currentStage = 1;
 bool extraEnemies = false;
 bool noTimeLeft = false;
@@ -671,34 +680,42 @@ void Game::Update() {
             switch ((*it)->id)
             {
             case 0:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 1}));
                 ballomKills++;
                 enemiesKilled++;
                 break;
             case 1:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 2}));
                 onilKills++;
                 enemiesKilled++;
                 break;
             case 2:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 3}));
                 dahlKills++;
                 enemiesKilled++;
                 break;
             case 3:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 4}));
                 minvoKills++;
                 enemiesKilled++;
                 break;
             case 4:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 5}));
                 doriaKills++;
                 enemiesKilled++;
                 break;
             case 5:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 6}));
                 ovapeKills++;
                 enemiesKilled++;
                 break;
             case 6:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 7}));
                 passKills++;
                 enemiesKilled++;
                 break;
             case 7:
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 8}));
                 pontanKills++;
                 enemiesKilled++;
                 break;
@@ -830,7 +847,45 @@ void Game::Draw() {
             for (auto& bomb : bombs) bomb->Draw();
             for (auto& blast : blasts) blast.Draw();
             for (const auto& enemy : enemies) enemy->Draw();
-            
+            for (const auto& score : scores)
+            {
+                Vector2 v = { score->pos.x, score->pos.y };
+                Rectangle source = { 0, 0, 16, 5 };
+                Rectangle dest = { (score->pos.x), (score->pos.y), 16 * 6.3f , 5 * 6.3f };
+                Vector2 v2 = { 1, 1 };
+                switch (score->id)
+                {
+                case 2:
+                    source.y = 10;
+                    break;
+                case 3:
+                    source.y = 15;
+                    break;
+                case 4:
+                    source.y = 20;
+                    break;
+                case 5:
+                    source.y = 5;
+                    source.x = 32;
+                    break;
+                case 6:
+                    source.y = 10;
+                    source.x = 32;
+                    break;
+                case 7:
+                    source.y = 20;
+                    source.x = 32;
+                    break;
+                case 8:
+                    source.y = 25;
+                    source.x = 32;
+                    break;
+                default:
+                    break;
+                }
+
+                DrawTexturePro(score->textura, source, dest, v2, 0, WHITE);
+            }
             if (player.IsActive()) player.Draw();
             if (currentStage == 5) {
                 currentBoss->Draw();
