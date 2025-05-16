@@ -11,6 +11,7 @@
 #include "Pass.h"
 #include "Pontan.h"
 #include "Customizer.h"
+#include "CustomizerPU.h"
 #include "BossBase.h"
 #include "MechaBlastX.h"
 #include "PowerUp.h"
@@ -35,6 +36,7 @@
 
 
 Customizer customizer;
+CustomizerPU customizerPU;
 ResourceManager resourceManager;
 Texture2D initialScreen;
 Texture2D arrowTexture;
@@ -145,6 +147,7 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     gameSong = resourceManager.GetMusic(1);
     specialGameSong = resourceManager.GetMusic(2);
     customizer.LoadFromFile("resources/customization.txt");
+    customizerPU.LoadFromFile("resources/customizationPU.txt");
     startTime = GetTime();
     targetTime = 200.0;
     

@@ -537,6 +537,7 @@
     <ClInclude Include="..\..\include\Coil.h" />
     <ClInclude Include="..\..\include\Constants.h" />
     <ClInclude Include="..\..\include\Customizer.h" />
+    <ClInclude Include="..\..\include\CustomizerPU.h" />
     <ClInclude Include="..\..\include\Dahl.h" />
     <ClInclude Include="..\..\include\Doria.h" />
     <ClInclude Include="..\..\include\EnemyBase.h" />
@@ -573,6 +574,7 @@
     <ClCompile Include="..\..\src\Coil.cpp" />
     <ClCompile Include="..\..\src\Constants.cpp" />
     <ClCompile Include="..\..\src\Customizer.cpp" />
+    <ClCompile Include="..\..\src\CustomizerPU.cpp" />
     <ClCompile Include="..\..\src\Dahl.cpp" />
     <ClCompile Include="..\..\src\Doria.cpp" />
     <ClCompile Include="..\..\src\EnemyBase.cpp" />
