@@ -11,12 +11,16 @@ Enemy::Enemy(Vector2 startPosition)
     framesSpeed = 6;
     isDead = false;
     isActive = true;
+    canBeKilled = 0;
 }
 
 Enemy::~Enemy() {}
 
 void Enemy::Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
     if (!isDead) {
+        if (canBeKilled > 0) {
+            canBeKilled -= deltaTime;
+        }
         framecounter -= deltaTime;
         if (direction.x == 0 && direction.y == 0) {
             framecounter = 0;
@@ -154,12 +158,19 @@ bool Enemy::CheckWallCollision(Vector2 Position, const std::vector<Wall>& walls,
 }
 
 void Enemy::Die() {
-    isDead = true;
-    currentFrame = 0;
+    if (canBeKilled <= 0) {
+        isDead = true;
+        currentFrame = 0;
+    }
 }
 
 void Enemy::SetSpeed(float temp) {
     speed = temp;
+}
+
+void Enemy::SetCanBeKilled(int timer)
+{
+    canBeKilled = timer;
 }
 
 bool Enemy::IsActive()

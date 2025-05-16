@@ -63,6 +63,8 @@ Vector2 arrowPositions[] = {
 };
 
 int currentStage = 1;
+bool extraEnemies = false;
+bool noTimeLeft = false;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -88,6 +90,8 @@ int currentCoils = 3;
 int currentPhase = 1;
 std::vector<Rectangle> zoneMark;
 
+std::vector<Vector2> emptyPositions;
+
 Music menuSong;
 Music gameSong;
 Music specialGameSong;
@@ -101,7 +105,7 @@ bool isCoop = false;
 double startTime = GetTime();
 double targetTime = 200.0;
 double elapsedTime;
-double remainingTime;
+double remainingTime = 200.0;
 
 Color semiTransparentRed = Color{ 255, 0, 0, 80};
 
@@ -573,6 +577,12 @@ void Game::Update() {
     
     //printf("%d", PUWP);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    if (remainingTime <= 0 && noTimeLeft == false) {
+        NoTime();
+        noTimeLeft = true;
+    }
+
     for (auto it = blasts.begin(); it != blasts.end(); ) {
         it->Update(GetFrameTime()); 
         if (!it->active) {
@@ -596,6 +606,41 @@ void Game::Update() {
     }
     for (auto& powerup : powerups) {
         powerup->Update();
+        if (CheckBlastDamage({powerup->GetBound().x, powerup->GetBound().y})) {
+            if (extraEnemies == false) {
+                AddEnemy({ powerup->GetBound().x, powerup->GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ powerup->GetBound().x, powerup->GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ powerup->GetBound().x, powerup->GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ powerup->GetBound().x, powerup->GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                extraEnemies = true;
+            }
+        }
+    }
+
+    if (CheckBlastDamage({ exits.back().GetBound().x, exits.back().GetBound().y })) {
+        if (extraEnemies == false) {
+            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+            enemies.back()->SetCanBeKilled(60);
+            enemies.back()->SetSpeed(3.0f);
+            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+            enemies.back()->SetCanBeKilled(60);
+            enemies.back()->SetSpeed(3.0f);
+            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+            enemies.back()->SetCanBeKilled(60);
+            enemies.back()->SetSpeed(3.0f);
+            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+            enemies.back()->SetCanBeKilled(60);
+            enemies.back()->SetSpeed(3.0f);
+            extraEnemies = true;
+        }
     }
 
     for (auto it = bombs.begin(); it != bombs.end(); ) {
@@ -767,7 +812,7 @@ void Game::Draw() {
         if (!isCoop) {
             camera1.zoom = 0.7f;
 
-            target1.x = Clamp(target1.x, 700, 1025);
+            target1.x = Clamp(target1.x, 700, 1350);
 
             camera1.target = target1;
             camera1.offset = { SCREEN_WIDTH / 4.0f, SCREEN_HEIGHT / 2.0f };
@@ -879,9 +924,9 @@ void Game::Draw() {
             DrawRectangle(SCREEN_WIDTH / 2 - 2, 0, 4, SCREEN_HEIGHT, BLACK);
         }
         // HUD común (fuera de las cámaras)
-        DrawText(TextFormat("TIME %.0f", remainingTime), 30, 20, 40, WHITE);
-        DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH / 2 - 100, 20, 40, WHITE);
-        DrawText(TextFormat("LEFT %d", player.GetLife()), SCREEN_WIDTH - 200, 20, 40, WHITE);
+        DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
+        DrawText(TextFormat("SCORE %d", playerScore), SCREEN_WIDTH / 2 - 200, 80, 40, WHITE);
+        DrawText(TextFormat("LEFT %d", player.GetLife()), SCREEN_WIDTH - 500, 80, 40, WHITE);
         DrawFPS(20, SCREEN_HEIGHT - 30);
     }
     else if (inCredits) {
@@ -1018,7 +1063,7 @@ void Game::AddWalls() {
         exits.back().SetTexture(resourceManager.GetTexture(14));
         printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
 
-        std::vector<Vector2> emptyPositions;
+        
 
         for (int i = 1; i < 31 - 1; i++) {
             for (int j = 1; j < 13 - 1; j++) {
@@ -1217,6 +1262,17 @@ bool Game::IsBlastBlocked(Vector2 position) {
         }
     }
     return false;  // No Blockeado :D
+}
+
+void Game::NoTime() {
+    for (int i = 0; i < 9; i++)
+    {
+        int index = GetRandomValue(0, emptyPositions.size() - 1);
+        Vector2 pos = emptyPositions[index];
+
+        AddEnemy(pos, 7); 
+        enemies.back()->SetSpeed(3.0f);
+    }
 }
 
 void Game::AddEnemy(Vector2 pos, int enemyType) {
@@ -1431,6 +1487,8 @@ bool Game::CheckPlayerBlastDamage(Vector2 pos) {
 
 void Game::ResetStage() {
     gameRunning = false;
+    extraEnemies = false;
+    noTimeLeft = false;
     startTime = GetTime();
     targetTime = 200.0f;
     blasts.clear();
@@ -1492,8 +1550,8 @@ void Game::NextLevel() {
     currentStage++;
     gameRunning = false;
 
-    
-
+    noTimeLeft = false;
+    extraEnemies = false;
     blasts.clear();
     bombs.clear();
     enemies.clear();

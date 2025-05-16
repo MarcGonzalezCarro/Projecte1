@@ -38,6 +38,7 @@ public:
     int CheckCollisions(Rectangle rec);
     int CheckPlayerCollisions(Rectangle rec);
     bool IsBlastBlocked(Vector2 position);
+    void NoTime();
     bool CheckBlastDamage(Vector2 pos);
     bool CheckPlayerBlastDamage(Vector2 pos);
     void GameOver();

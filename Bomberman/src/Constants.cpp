@@ -2,8 +2,8 @@
 #include "Constants.h"
 
 // Definimos la constante global
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+const int SCREEN_WIDTH = 1920;
+const int SCREEN_HEIGHT = 1080;
 const int CELL_SIZE = 100;
 const int INITIAL_PLAYER_X = 100;
 const int INITIAL_PLAYER_Y = 317;
