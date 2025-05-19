@@ -104,6 +104,12 @@ void Enemy::Draw() const {
     
 }
 
+void Enemy::DrawHitbox() const {
+    // Dibujar el enemigo 
+    DrawRectangleLines(position.x, position.y, CELL_SIZE, CELL_SIZE, RED);
+
+}
+
 Vector2 Enemy::GetPosition() const {
     return position;
 }

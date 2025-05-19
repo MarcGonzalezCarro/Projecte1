@@ -103,6 +103,12 @@ void Blast::Draw() {
     }
 }
 
+void Blast::DrawHitbox() {
+    if (!active) return;
+    DrawRectangleLines(position.x, position.y, CELL_SIZE, CELL_SIZE, WHITE);
+    
+}
+
 void Blast::SetTexture(Texture2D tex) {
     texture = tex;
 }

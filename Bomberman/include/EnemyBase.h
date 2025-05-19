@@ -15,6 +15,8 @@ public:
     virtual void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks); // Actualización del enemigo (movimientos, lógica)
     virtual void Draw() const;         // Dibuja el enemigo en pantalla
 
+    void DrawHitbox() const;
+
     Vector2 GetPosition() const; // Obtener la posición actual
     Vector2 GetDirection() const;
     int GetScore();

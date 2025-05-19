@@ -53,6 +53,15 @@ void Bomb::Draw() const {
      
 }
 
+void Bomb::DrawHitbox() const {
+
+    if (active) {
+        DrawRectangleLines(x, y, CELL_SIZE, CELL_SIZE, DARKPURPLE);
+
+    }
+
+}
+
 bool Bomb::HasExploded() const {
     return !active && timer <= 0;
 }

@@ -15,6 +15,10 @@ void Exit::Draw() {
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
 }
 
+void Exit::DrawHitbox() {
+    DrawRectangleLines(position.x, position.y, CELL_SIZE, CELL_SIZE, GREEN);
+}
+
 Rectangle Exit::GetBound() const
 {
     return Rectangle(position);

@@ -24,6 +24,8 @@ public:
     void Move(int dx, int dy, Vector2 dir);
     void Update();
     void Draw() const;
+
+    void DrawHitbox() const;
     
     void SetPosition(int newX, int newY);
     void SetX(int newX);

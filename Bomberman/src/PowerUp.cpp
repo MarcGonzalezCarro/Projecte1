@@ -15,6 +15,10 @@ void PowerUp::Draw() {
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
 }
 
+void PowerUp::DrawHitbox() {
+    DrawRectangleLines(position.x, position.y, CELL_SIZE, CELL_SIZE, BLUE);
+}
+
 Rectangle PowerUp::GetBound() const
 {
     return Rectangle(position);

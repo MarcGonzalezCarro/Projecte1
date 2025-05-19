@@ -21,6 +21,7 @@ public:
     SoftBlock(float x, float y);
     void Destroy();
     void Draw();
+    void DrawHitbox();
     bool IsDestroyed() const;
     bool IsActive() const;
     void Update();

@@ -15,6 +15,7 @@ public:
     PowerUp(float x, float y);
     int id;
     void Draw();
+    void DrawHitbox();
     Rectangle GetBound() const;
     void SetTexture(Texture2D text);
     virtual void Effect();

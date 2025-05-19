@@ -69,6 +69,7 @@ struct ScoreEnemies
     Texture2D textura;
     Vector2 pos;
     int id;
+    int time;
 };
 
 std::vector<std::unique_ptr<ScoreEnemies>> scores;
@@ -76,6 +77,10 @@ std::vector<std::unique_ptr<ScoreEnemies>> scores;
 int currentStage = 1;
 bool extraEnemies = false;
 bool noTimeLeft = false;
+
+bool debbugerMode1 = false;
+bool debbugerMode2 = false;
+int totalEnemiesThisStage = 0;
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -586,10 +591,34 @@ void Game::Update() {
     if (IsKeyDown(KEY_B)) {
         PrepareBossAttack1();
     }
-    
+    if (IsKeyPressed(KEY_F1)) {
+        if (debbugerMode1) {
+            debbugerMode1 = false;
+        }else{
+            debbugerMode1 = true;
+        }
+    }
+    if (IsKeyPressed(KEY_F2)) {
+        if (debbugerMode2) {
+            debbugerMode2 = false;
+        }
+        else {
+            debbugerMode2 = true;
+        }
+    }
     //printf("%d", PUWP);
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     
+    for (auto it = scores.begin(); it != scores.end(); ) {
+        if ((*it)->time > 0) {
+            (*it)->time -= GetFrameTime();
+            ++it;
+        }
+        else {
+            it = scores.erase(it); // erase devuelve el siguiente iterador válido
+        }
+    }
+
     if (remainingTime <= 0 && noTimeLeft == false) {
         NoTime();
         noTimeLeft = true;
@@ -636,22 +665,23 @@ void Game::Update() {
             }
         }
     }
-
-    if (CheckBlastDamage({ exits.back().GetBound().x, exits.back().GetBound().y })) {
-        if (extraEnemies == false) {
-            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
-            enemies.back()->SetCanBeKilled(60);
-            enemies.back()->SetSpeed(3.0f);
-            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
-            enemies.back()->SetCanBeKilled(60);
-            enemies.back()->SetSpeed(3.0f);
-            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
-            enemies.back()->SetCanBeKilled(60);
-            enemies.back()->SetSpeed(3.0f);
-            AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
-            enemies.back()->SetCanBeKilled(60);
-            enemies.back()->SetSpeed(3.0f);
-            extraEnemies = true;
+    if (currentStage != 5) {
+        if (CheckBlastDamage({ exits.back().GetBound().x, exits.back().GetBound().y })) {
+            if (extraEnemies == false) {
+                AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
+                enemies.back()->SetCanBeKilled(60);
+                enemies.back()->SetSpeed(3.0f);
+                extraEnemies = true;
+            }
         }
     }
 
@@ -680,42 +710,42 @@ void Game::Update() {
             switch ((*it)->id)
             {
             case 0:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 1}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 0 , 20}));
                 ballomKills++;
                 enemiesKilled++;
                 break;
             case 1:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 2}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 1 , 20 }));
                 onilKills++;
                 enemiesKilled++;
                 break;
             case 2:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 3}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 2 , 20 }));
                 dahlKills++;
                 enemiesKilled++;
                 break;
             case 3:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 4}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 3 , 20 }));
                 minvoKills++;
                 enemiesKilled++;
                 break;
             case 4:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 5}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 4 , 20 }));
                 doriaKills++;
                 enemiesKilled++;
                 break;
             case 5:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 6}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 5 , 20 }));
                 ovapeKills++;
                 enemiesKilled++;
                 break;
             case 6:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 7}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 6 , 20 }));
                 passKills++;
                 enemiesKilled++;
                 break;
             case 7:
-                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 8}));
+                scores.push_back(std::make_unique<ScoreEnemies>(ScoreEnemies{ resourceManager.GetTexture(20), (*it)->GetPosition(), 7 , 20 }));
                 pontanKills++;
                 enemiesKilled++;
                 break;
@@ -847,14 +877,29 @@ void Game::Draw() {
             for (auto& bomb : bombs) bomb->Draw();
             for (auto& blast : blasts) blast.Draw();
             for (const auto& enemy : enemies) enemy->Draw();
+            if (player.IsActive()) player.Draw();
+            if (debbugerMode1) {
+                for (auto& wall : walls) wall.DrawHitbox();
+                if (player.IsActive()) player.DrawHitbox();
+                for (auto& exit : exits) exit.DrawHitbox();
+                for (auto& softBlock : softBlocks) softBlock.DrawHitbox();
+                for (const auto& powerup : powerups) powerup->DrawHitbox();
+                for (auto& bomb : bombs) bomb->DrawHitbox();
+                for (auto& blast : blasts) blast.DrawHitbox();
+                for (const auto& enemy : enemies) enemy->DrawHitbox();
+            }
             for (const auto& score : scores)
             {
                 Vector2 v = { score->pos.x, score->pos.y };
                 Rectangle source = { 0, 0, 16, 5 };
                 Rectangle dest = { (score->pos.x), (score->pos.y), 16 * 6.3f , 5 * 6.3f };
                 Vector2 v2 = { 1, 1 };
+                //score->id = 4;
                 switch (score->id)
                 {
+                case 1:
+                    source.y = 5;
+                    break;
                 case 2:
                     source.y = 10;
                     break;
@@ -862,23 +907,20 @@ void Game::Draw() {
                     source.y = 15;
                     break;
                 case 4:
-                    source.y = 20;
+                    source.y = 0;
+                    source.x = 16;
                     break;
                 case 5:
                     source.y = 5;
-                    source.x = 32;
+                    source.x = 16;
                     break;
                 case 6:
                     source.y = 10;
-                    source.x = 32;
+                    source.x = 16;
                     break;
                 case 7:
-                    source.y = 20;
-                    source.x = 32;
-                    break;
-                case 8:
-                    source.y = 25;
-                    source.x = 32;
+                    source.y = 15;
+                    source.x = 16;
                     break;
                 default:
                     break;
@@ -886,7 +928,7 @@ void Game::Draw() {
 
                 DrawTexturePro(score->textura, source, dest, v2, 0, WHITE);
             }
-            if (player.IsActive()) player.Draw();
+            
             if (currentStage == 5) {
                 currentBoss->Draw();
                 for each (Rectangle var in zoneMark)
@@ -980,6 +1022,21 @@ void Game::Draw() {
         }
         if (isCoop) {
             DrawRectangle(SCREEN_WIDTH / 2 - 2, 0, 4, SCREEN_HEIGHT, BLACK);
+        }
+
+        if (debbugerMode2) {
+            DrawRectangle(0,0,1920, 1080, { 128, 128, 128, 160 });
+            DrawText(TextFormat("Posicion Jugador: %.2f, %.2f", player.GetBounds().x, player.GetBounds().y), 600, 300, 40, WHITE);
+            DrawText(TextFormat("Velocidad Jugador: %d", PLAYER_SPEED), 600, 340, 40, WHITE);
+            if (isCoop) {
+                DrawText(TextFormat("Posicion Jugador 2: %.2f, %.2f", player2.GetBounds().x, player2.GetBounds().y), 600, 340, 40, WHITE);
+            }
+            DrawText(TextFormat("Enemigos Totales: %d", totalEnemiesThisStage), 600, 380, 40, WHITE);
+            DrawText(TextFormat("Enemigos Restantes: %d", enemies.size()), 600, 420, 40, WHITE);
+            DrawText(TextFormat("Bombas Disponibles: %d", MAX_BOMBS - bombs.size()), 600, 460, 40, WHITE);
+            DrawText(TextFormat("Rango Bombas: %d", BOMB_RANGE), 600, 500, 40, WHITE);
+            DrawText(TextFormat("PowerUps Recogidos: %d", powerUpsPicked), 600, 540, 40, WHITE);
+
         }
         // HUD común (fuera de las cámaras)
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
@@ -1165,7 +1222,7 @@ void Game::AddWalls() {
                 Vector2 pos = emptyPositions[index];
 
                 AddEnemy(pos, enemyType); // <- tu método personalizado
-
+                totalEnemiesThisStage++;
                 emptyPositions.erase(emptyPositions.begin() + index); // eliminar posición usada
             }
         }
@@ -1547,6 +1604,7 @@ void Game::ResetStage() {
     gameRunning = false;
     extraEnemies = false;
     noTimeLeft = false;
+    totalEnemiesThisStage = 0;
     startTime = GetTime();
     targetTime = 200.0f;
     blasts.clear();

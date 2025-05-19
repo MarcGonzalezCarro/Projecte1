@@ -13,6 +13,7 @@ private:
 public:
     Wall(float x, float y);
     void Draw();
+    void DrawHitbox();
     Rectangle GetBound() const;
     void SetTexture(Texture2D text);
 };

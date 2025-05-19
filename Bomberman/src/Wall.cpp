@@ -15,6 +15,11 @@ void Wall::Draw() {
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
 }
 
+void Wall::DrawHitbox() {
+    
+    DrawRectangleLines(position.x, position.y, CELL_SIZE, CELL_SIZE, YELLOW);
+}
+
 Rectangle Wall::GetBound() const
 {
     return Rectangle(position);

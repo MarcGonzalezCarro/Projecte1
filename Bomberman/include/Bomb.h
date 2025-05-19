@@ -21,6 +21,7 @@ public:
 
     float Update(float deltaTime);
     void Draw() const;
+    void DrawHitbox() const;
     bool HasExploded() const;
     void Explode();
     Rectangle GetBounds() const;

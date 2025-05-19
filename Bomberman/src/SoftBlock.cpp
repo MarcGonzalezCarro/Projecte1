@@ -26,6 +26,12 @@ void SoftBlock::Draw() {
     }
 }
 
+void SoftBlock::DrawHitbox() {
+    if (isActive) {
+        DrawRectangleLines(position.x,position.y, CELL_SIZE, CELL_SIZE, GREEN);
+    }
+}
+
 void SoftBlock::Update() {
 
     framesCounter++;

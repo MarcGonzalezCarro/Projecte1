@@ -103,6 +103,11 @@ void Player::Draw() const {
     
 }
 
+void Player::DrawHitbox() const {
+    DrawRectangleLines(x, y, CELL_SIZE - 10, CELL_SIZE - 10, ORANGE);
+
+}
+
 void Player::SetPosition(int newX, int newY) {
     x = newX;
     y = newY;

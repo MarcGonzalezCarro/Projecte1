@@ -25,6 +25,7 @@ public:
 
     void Update(float deltaTime);
     void Draw();
+    void DrawHitbox();
     void SetTexture(Texture2D texture);
     void SetDirection(int direction);
     void SetFinal(bool status);
