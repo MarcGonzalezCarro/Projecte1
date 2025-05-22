@@ -34,6 +34,8 @@
 #include <algorithm>
 #include <raymath.h>
 
+#define INTERNAL_WIDTH 1920
+#define INTERNAL_HEIGHT 1080
 
 Customizer customizer;
 CustomizerPU customizerPU;
@@ -81,6 +83,11 @@ bool noTimeLeft = false;
 bool debbugerMode1 = false;
 bool debbugerMode2 = false;
 int totalEnemiesThisStage = 0;
+int enemySelected = 0;
+int powerUpSelected = 0;
+
+Camera2D camera1 = { 0 };
+Camera2D camera2 = { 0 };
 
 std::vector<ScoreEntry> entries = SaveGame::GetEntriesFromFile();
 std::vector<Blast> blasts; 
@@ -125,6 +132,9 @@ double remainingTime = 200.0;
 
 Color semiTransparentRed = Color{ 255, 0, 0, 80};
 
+RenderTexture2D renderTarget;
+bool resolutionChanged = false;
+
 ////////////////////////////
 //FOR STATS
 ////////////////////////////
@@ -165,6 +175,8 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     startTime = GetTime();
     targetTime = 200.0;
     
+    renderTarget = LoadRenderTexture(INTERNAL_WIDTH, INTERNAL_HEIGHT);
+    SetTextureFilter(renderTarget.texture, TEXTURE_FILTER_POINT);
 }
 
 void Game::Run() {
@@ -586,11 +598,12 @@ void Game::Update() {
         GameOver();
     }
     if (IsKeyDown(KEY_P)) {
-        playerScore += 100000;
+        playerScore += 10000;
     }
     if (IsKeyDown(KEY_B)) {
         PrepareBossAttack1();
     }
+    //Mostrar Hitboxes
     if (IsKeyPressed(KEY_F1)) {
         if (debbugerMode1) {
             debbugerMode1 = false;
@@ -598,12 +611,66 @@ void Game::Update() {
             debbugerMode1 = true;
         }
     }
+    //Mostrar Stats de Debug
     if (IsKeyPressed(KEY_F2)) {
         if (debbugerMode2) {
             debbugerMode2 = false;
         }
         else {
             debbugerMode2 = true;
+        }
+    }
+    //Spawnear Enemigos en el Raton
+    if (IsKeyPressed(KEY_F3)) {
+        Vector2 pos = GetScreenToWorld2D(GetMousePosition(), camera1);
+        pos.y += 50;
+        pos.x = floorf(pos.x / CELL_SIZE) * CELL_SIZE;
+        pos.y = floorf(pos.y / CELL_SIZE) * CELL_SIZE + 16;
+        
+        AddEnemy(pos, enemySelected);
+    }
+    //Rotar Enemigos a Spawnear
+    if (IsKeyPressed(KEY_F4)) {
+        enemySelected++;
+        if (enemySelected >= 8) {
+            enemySelected = 0;
+        }
+    }
+    //Spawnear PowerUp en el Raton
+    if (IsKeyPressed(KEY_F5)) {
+        Vector2 pos = GetScreenToWorld2D(GetMousePosition(), camera1);
+        pos.y += 50;
+        pos.x = floorf(pos.x / CELL_SIZE) * CELL_SIZE;
+        pos.y = floorf(pos.y / CELL_SIZE) * CELL_SIZE + 16;
+
+        AddPowerUp(pos, powerUpSelected);
+    }
+    //Rotar PowerUp a Spawnear
+    if (IsKeyPressed(KEY_F6)) {
+        powerUpSelected++;
+        if (powerUpSelected >= 8) {
+            powerUpSelected = 0;
+        }
+    }
+    if (IsKeyPressed(KEY_F7)) {
+        Vector2 pos = GetScreenToWorld2D(GetMousePosition(), camera1);
+        pos.y += 50;
+        pos.x = floorf(pos.x / CELL_SIZE) * CELL_SIZE;
+        pos.y = floorf(pos.y / CELL_SIZE) * CELL_SIZE + 16;
+
+        AddBlasts1(pos);
+    }
+    if (IsKeyPressed(KEY_F8)) {
+        NextLevel();
+    }
+    if (IsKeyPressed(KEY_ONE)) {
+        if (!resolutionChanged) {
+            SetWindowSize(1280, 720);
+            resolutionChanged = true;
+        }
+        else {
+            SetWindowSize(1920, 1080);
+            resolutionChanged = false;
         }
     }
     //printf("%d", PUWP);
@@ -845,7 +912,7 @@ void Game::Update() {
 }
 
 void Game::Draw() {
-    BeginDrawing();
+    BeginTextureMode(renderTarget);
    
     if (startScreen) {
         ClearBackground(BLACK);
@@ -855,8 +922,7 @@ void Game::Draw() {
     else if(gameRunning){
 
         // Cámara 1
-        Camera2D camera1 = { 0 };
-        Camera2D camera2 = { 0 };
+        
         Vector2 target1 = { player.GetBounds().x, SCREEN_HEIGHT/2 + 200};
 
         if (!isCoop) {
@@ -869,7 +935,7 @@ void Game::Draw() {
 
             BeginMode2D(camera1);
             ClearBackground(GRAY);
-            DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
+            DrawRectangle(0, 215, 3000, 1200, DARKGREEN);
             for (auto& wall : walls) wall.Draw();
             for (auto& exit : exits) exit.Draw();
             for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -1037,6 +1103,7 @@ void Game::Draw() {
             DrawText(TextFormat("Rango Bombas: %d", BOMB_RANGE), 600, 500, 40, WHITE);
             DrawText(TextFormat("PowerUps Recogidos: %d", powerUpsPicked), 600, 540, 40, WHITE);
 
+
         }
         // HUD común (fuera de las cámaras)
         DrawText(TextFormat("TIME %.0f", remainingTime), 30, 80, 40, WHITE);
@@ -1137,6 +1204,25 @@ void Game::Draw() {
                 DrawText("_", (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE); // Mostrar guiones bajos
         }
     }
+    EndTextureMode();
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+
+    float screenW = GetScreenWidth();
+    float screenH = GetScreenHeight();
+    float scale = fminf(screenW / (float)INTERNAL_WIDTH, screenH / (float)INTERNAL_HEIGHT);
+
+    Rectangle src = { 0, 0, (float)renderTarget.texture.width, -(float)renderTarget.texture.height }; // Flip vertical
+    Rectangle dest = {
+        (screenW - INTERNAL_WIDTH * scale) / 2.0f,
+        (screenH - INTERNAL_HEIGHT * scale) / 2.0f,
+        INTERNAL_WIDTH * scale,
+        INTERNAL_HEIGHT * scale
+    };
+
+    DrawTexturePro(renderTarget.texture, src, dest, { 0, 0 }, 0.0f, WHITE);
+
     EndDrawing();
 }
 
@@ -1322,6 +1408,50 @@ void Game::AddBlasts1(Vector2 pos)
     blasts.back().direction = 4;
     blasts.back().SetFromBoss(true);
 
+}
+
+void Game::AddPowerUp(Vector2 pos, int powerUpType)
+{
+    switch (powerUpType)
+    {
+    case 0:
+        powerups.push_back(std::make_unique<SpeedUp>(pos.x, pos.y));
+        
+        break;
+    case 1:
+        powerups.push_back(std::make_unique<BombUp>(pos.x, pos.y));
+        
+        break;
+    case 2:
+        powerups.push_back(std::make_unique<FireUp>(pos.x, pos.y));
+        
+        break;
+    case 3:
+        powerups.push_back(std::make_unique<WallPass>(pos.x, pos.y));
+        
+        break;
+    case 4:
+        powerups.push_back(std::make_unique<BombPass>(pos.x, pos.y));
+        
+        break;
+    case 5:
+        powerups.push_back(std::make_unique<FlamePass>(pos.x, pos.y));
+        
+        break;
+    case 6:
+        powerups.push_back(std::make_unique<Invincible>(pos.x, pos.y));
+        
+        break;
+    case 7:
+        powerups.push_back(std::make_unique<RemoteControl>(pos.x, pos.y));
+
+        break;
+    default:
+        powerups.push_back(std::make_unique<SpeedUp>(pos.x, pos.y));
+
+        break;
+    }
+    powerups.back()->SetTexture(resourceManager.GetTexture(13));
 }
 
 bool Game::IsBlastBlocked(Vector2 position) {
