@@ -9,6 +9,7 @@ SoftBlock::SoftBlock(float x, float y) {
     currentFrame = 0;
     framesCounter = 0;
     framesSpeed = 22;
+    hasPowerUp = false;
 }
 
 void SoftBlock::Destroy() {

@@ -87,6 +87,9 @@ int totalEnemiesThisStage = 0;
 int enemySelected = 0;
 int powerUpSelected = 0;
 
+bool explodeB = false;
+int invincibleTimer = 0;
+
 Camera2D camera1 = { 0 };
 Camera2D camera2 = { 0 };
 
@@ -437,7 +440,7 @@ void Game::Update() {
     if (CheckEnemyCollision(playerPos.x, playerPos.y)) {
         if (!player.IsDead()) {
             PlaySound(resourceManager.GetSound(4));
-            if (INVINCIBLE == false) {
+            if (invincibleTimer <= 0) {
                 player.Die();
             }
         }
@@ -446,7 +449,7 @@ void Game::Update() {
     if (CheckPlayerBlastDamage(playerPos)) {
         if(!player.IsDead()){
             PlaySound(resourceManager.GetSound(4));
-            if (INVINCIBLE == false) {
+            if (invincibleTimer <= 0) {
                 player.Die();
             }
         }
@@ -462,11 +465,9 @@ void Game::Update() {
     }
 
     CheckPowerUPCollision(player.GetBounds());
-
     player.Update();
 
     if (IsKeyPressed(KEY_ENTER)) { 
-        PlaySound(resourceManager.GetSound(2));
         AddBomb(player.GetBounds().x, player.GetBounds().y); 
     }
 
@@ -581,7 +582,9 @@ void Game::Update() {
             AddBomb(player2.GetBounds().x, player2.GetBounds().y);
         }
     }
-
+    if (IsKeyPressed(KEY_R)) {
+        explodeB = true;
+    }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Debug Mode
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -758,15 +761,28 @@ void Game::Update() {
         float temp = (*it)->Update(GetFrameTime());
         
         if (temp <= 0) {
-            PlaySound(resourceManager.GetSound(6));
-            AddBlasts(**it);
-            delete* it;           
-            it = bombs.erase(it); 
+            if (!PURC) {
+                PlaySound(resourceManager.GetSound(6));
+                AddBlasts(**it);
+                delete* it;
+                it = bombs.erase(it);
+            }
+            else if(explodeB){
+                PlaySound(resourceManager.GetSound(6));
+                AddBlasts(**it);
+                delete* it;
+                it = bombs.erase(it);
+            }
+            else {
+                ++it;
+            }
+             
         }
         else {
             ++it; 
         }
     }
+    
     for (auto it = enemies.begin(); it != enemies.end();) {
         if (blasts.size() > 0) {
             if ((*it)->IsDead() == false) {
@@ -909,6 +925,15 @@ void Game::Update() {
             energyShield.reset();
         }
     }
+
+    if (explodeB == true) {
+        explodeB = false;
+    }
+
+    if (invincibleTimer > 0) {
+        invincibleTimer -= GetFrameTime();
+    }
+
     elapsedTime = GetTime() - startTime;
     remainingTime = targetTime - elapsedTime;
 }
@@ -1279,9 +1304,14 @@ void Game::AddWalls() {
         int temp = GetRandomValue(0, softBlocks.size() - 1);
         exits.emplace_back(softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
         exits.back().SetTexture(resourceManager.GetTexture(14));
-        printf("Salida en: %f, %f", exits.back().GetBound().x, exits.back().GetBound().y);
+        printf("Salida en: %f, %f\n", exits.back().GetBound().x, exits.back().GetBound().y);
 
-        
+        temp = GetRandomValue(0, softBlocks.size() - 1);
+        while (softBlocks.at(temp).GetBound().x == exits.back().GetBound().x && softBlocks.at(temp).GetBound().y == exits.back().GetBound().y) {
+            temp = GetRandomValue(0, softBlocks.size() - 1);
+        }
+        softBlocks.at(temp).hasPowerUp = true;
+        printf("PowerUp en %f, %f", softBlocks.at(temp).GetBound().x, softBlocks.at(temp).GetBound().y);
 
         for (int i = 1; i < 31 - 1; i++) {
             for (int j = 1; j < 13 - 1; j++) {
@@ -1356,16 +1386,40 @@ void Game::AddWalls() {
 
 
 void Game::AddBomb(float x, float y) {
+    bool temp = false;
+    for (auto it = bombs.begin(); it != bombs.end(); ) {
+        if ((*it)->GetBounds().x == (float)(((int)(x) / CELL_SIZE) * CELL_SIZE) && (*it)->GetBounds().y == (float)(((int)(y) / CELL_SIZE) * CELL_SIZE) + 15) {
+            temp = true;
+            printf("Aqui ya hay bomba");
+            break;
+        }
+        it++;
+    }
     
-    if (bombs.size() < MAX_BOMBS) {
+    if (bombs.empty()) {
         
+            if (bombs.size() < MAX_BOMBS) {
 
-        bombs.push_back(new Bomb((((int)(x) / CELL_SIZE) * CELL_SIZE), (((int)(y)/ CELL_SIZE) * CELL_SIZE) + 15));
-        bombs.back()->SetTexture(resourceManager.GetTexture(3));
-
-        bombsPlanted++;
+                bombs.push_back(new Bomb((((int)(x) / CELL_SIZE) * CELL_SIZE), (((int)(y) / CELL_SIZE) * CELL_SIZE) + 15));
+                bombs.back()->SetTexture(resourceManager.GetTexture(3));
+                PlaySound(resourceManager.GetSound(2));
+                bombsPlanted++;
+            }
         
     }
+    else {
+        if (!temp) {
+            //printf("Se ha comparado %f con %f y %f con %f\n", (*it)->GetBounds().x, (float)(((int)(x) / CELL_SIZE) * CELL_SIZE), (*it)->GetBounds().y, (float)(((int)(y) / CELL_SIZE) * CELL_SIZE) + 15);
+            if (bombs.size() < MAX_BOMBS) {
+
+                bombs.push_back(new Bomb((((int)(x) / CELL_SIZE) * CELL_SIZE), (((int)(y) / CELL_SIZE) * CELL_SIZE) + 15));
+                bombs.back()->SetTexture(resourceManager.GetTexture(3));
+                PlaySound(resourceManager.GetSound(2));
+                bombsPlanted++;
+            }
+        }
+    }
+    
 }
 
 void Game::ExplodeBombs() {
@@ -1482,42 +1536,9 @@ bool Game::IsBlastBlocked(Vector2 position) {
     for (auto it = softBlocks.begin(); it != softBlocks.end(); ++it) {
         if (CheckCollisionRecs({ position.x, position.y + 1, (float)CELL_SIZE, (float)CELL_SIZE }, it->GetBound())) {
             
-            if (it->GetBound().x != exits.back().GetBound().x || it->GetBound().y != exits.back().GetBound().y) {
-                int ran = std::rand() % 8;
-                if (ran == 1) {
-                    powerups.push_back(std::make_unique<SpeedUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 2) {
-                    powerups.push_back(std::make_unique<BombUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 3) {
-                    powerups.push_back(std::make_unique<FireUp>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 4) {
-                    powerups.push_back(std::make_unique<WallPass>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 5) {
-                    powerups.push_back(std::make_unique<BombPass>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 6) {
-                    powerups.push_back(std::make_unique<FlamePass>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 7) {
-                    powerups.push_back(std::make_unique<Invincible>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
-                if (ran == 8) {
-                    powerups.push_back(std::make_unique<RemoteControl>((*it).GetBound().x, (*it).GetBound().y));
-                    powerups.back()->SetTexture(resourceManager.GetTexture(13));
-                }
+            if (it->hasPowerUp == true) {
+                AddPowerUp({ it->GetBound().x, it->GetBound().y }, customizerPU.GetPowerUpForStage(currentStage));
             }
-            
             //printf("Añadido en: %f, %f\n", (*it).GetBound().x, (*it).GetBound().y);
             it->Destroy();
             return true;  // Bloqueado
@@ -1699,13 +1720,14 @@ void Game::CheckPowerUPCollision(Rectangle rec) {
                 bombPassCounter++;
                 break;
             case 5:
-                InvincibleCounter++;
+                wallPassCounter++;
                 break;
             case 6:
                 remoteControlCounter++;
                 break;
             case 7:
-                wallPassCounter++;
+                InvincibleCounter++;
+                invincibleTimer = 1500;
                 break;
             default:
                 break;

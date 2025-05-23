@@ -24,6 +24,7 @@ public:
     void DrawHitbox();
     bool IsDestroyed() const;
     bool IsActive() const;
+    bool hasPowerUp;
     void Update();
     Rectangle GetBound() const;
     void SetTexture(Texture2D text);

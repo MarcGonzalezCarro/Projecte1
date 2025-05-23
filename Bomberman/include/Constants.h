@@ -17,6 +17,7 @@ extern int MAX_BOMBS;
 extern int PLAYER_SPEED;
 extern bool PUWP;
 extern bool PUFP;
+extern bool PURC;
 extern bool INVINCIBLE;
 
 

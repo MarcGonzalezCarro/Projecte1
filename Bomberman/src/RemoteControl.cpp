@@ -6,5 +6,5 @@ RemoteControl::RemoteControl(float x, float y) : PowerUp(x, y) {
 }
 
 void RemoteControl::Effect(){
-    MAX_BOMBS++;
+    PURC = true;
 }
