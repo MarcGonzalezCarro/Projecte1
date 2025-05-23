@@ -42,6 +42,7 @@ CustomizerPU customizerPU;
 ResourceManager resourceManager;
 Texture2D initialScreen;
 Texture2D arrowTexture;
+Texture2D endScreen;
 
 bool startScreen = true;
 bool gameRunning = false;
@@ -167,6 +168,7 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     resourceManager.LoadSounds();
     initialScreen = resourceManager.GetTexture(15);
     arrowTexture = resourceManager.GetTexture(16);
+    endScreen = resourceManager.GetTexture(21);
     menuSong = resourceManager.GetMusic(0);
     gameSong = resourceManager.GetMusic(1);
     specialGameSong = resourceManager.GetMusic(2);
@@ -1191,7 +1193,7 @@ void Game::Draw() {
             }
         }
     }
-    else if (isDead) {
+    /*else if (isDead) {
         ClearBackground(BLACK);
         DrawText("GAME OVER", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
 
@@ -1203,6 +1205,21 @@ void Game::Draw() {
             else
                 DrawText("_", (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE); // Mostrar guiones bajos
         }
+    }*/
+    else if (isDead)
+    {
+        ClearBackground(BLACK);
+        DrawTextureEx(endScreen, {0, 0}, 0, 1, WHITE);
+        DrawText("INSERT YOUR NAME:", (float)SCREEN_WIDTH / 2 - 450, 850, 40, WHITE);
+        for (int i = 0; i < 5; i++) // Mostrar un máximo de 5 caracteres
+        {
+            if (i < nameLength)
+                DrawText(TextFormat("%c", playerName[i]), (float)SCREEN_WIDTH / 2 + i * 30, 850, 30, WHITE);
+            else
+                DrawText("_", (float)SCREEN_WIDTH / 2 + i * 30, 860, 30, WHITE); // Mostrar guiones bajos
+        }
+
+
     }
     EndTextureMode();
 

@@ -54,6 +54,7 @@ void ResourceManager::LoadTextures() {
     textures.push_back(LoadTexture("resources/Coil.png")); //19
 
     textures.push_back(LoadTexture("resources/Scores.png")); //20
+    textures.push_back(LoadTexture("resources/endScreen.png")); //21
 }
 
 void ResourceManager::LoadMusic() {
