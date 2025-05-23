@@ -18,6 +18,7 @@ extern int PLAYER_SPEED;
 extern bool PUWP;
 extern bool PUFP;
 extern bool PURC;
+extern bool PUBP;
 extern bool INVINCIBLE;
 
 

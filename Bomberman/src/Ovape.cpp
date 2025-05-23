@@ -13,3 +13,16 @@ Ovape::Ovape(Vector2 startPosition)
 }
 
 Ovape::~Ovape() {}
+
+bool Ovape::CheckWallCollision(Vector2 Position, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softblocks) {
+    Rectangle enemyRec = { Position.x, Position.y, CELL_SIZE - 30, CELL_SIZE - 30 };
+
+    for (const auto& wall : walls) {
+        Rectangle wallRec = wall.GetBound();
+        if (CheckCollisionRecs(enemyRec, wallRec)) {
+            return true; // Hay colisión
+        }
+    }
+
+    return false; // No hay colisión
+}

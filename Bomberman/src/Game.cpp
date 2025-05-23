@@ -364,7 +364,6 @@ void Game::Run() {
 void Game::Update() {
     int prevX = player.GetX();
     int prevY = player.GetY();
-    onBomb = CheckCollisions(player.GetBounds()) == 3;
     playerWalking = false;
 
     if (!player.IsActive()) {
@@ -386,15 +385,22 @@ void Game::Update() {
         }
     }
     if (!player.IsDead()) {
+        int temp = 0;
         if (IsKeyDown(KEY_RIGHT)) {
+            
             Vector2 v = { 1,0 };
             player.Move(PLAYER_SPEED, 0, v);
             playerWalking = true;
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
+            temp = CheckPlayerCollisions(player.GetBounds());
+            if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetX(prevX);
+            }
+            else if (onBomb == true && temp == 0) {
+                onBomb = false;
+                printf("on bomb false\n");
             }
             
 
@@ -405,8 +411,14 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
+            temp = CheckPlayerCollisions(player.GetBounds());
+            if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetX(prevX);
+            }
+            
+            else if (onBomb == true && temp == 0) {
+                onBomb = false;
+                printf("on bomb false\n");
             }
             
 
@@ -417,8 +429,14 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
+            temp = CheckPlayerCollisions(player.GetBounds());
+            if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetY(prevY);
+            }
+            
+            else if (onBomb == true && temp == 0) {
+                onBomb = false;
+                printf("on bomb false\n");
             }
             
 
@@ -429,8 +447,14 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            if (CheckPlayerCollisions(player.GetBounds()) != 0) {
+            temp = CheckPlayerCollisions(player.GetBounds());
+            if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetY(prevY);
+            }
+            
+            else if (onBomb == true && temp == 0) {
+                onBomb = false;
+                printf("on bomb false\n");
             }
             
 
@@ -1419,6 +1443,8 @@ void Game::AddBomb(float x, float y) {
             }
         }
     }
+    onBomb = true;
+    printf("on bomb true\n");
     
 }
 
@@ -1653,14 +1679,32 @@ int Game::CheckCollisions(Rectangle rec) {
 
 int Game::CheckPlayerCollisions(Rectangle rec) {
     for (const auto& wall : walls) {
-        if (CheckCollisionRecs(rec, wall.GetBound())) return 1;
+        if (CheckCollisionRecs(rec, wall.GetBound())) 
+            return 1;
     }
     if (PUWP == false)
     {
         for (const auto& softBlock : softBlocks) {
-            if (CheckCollisionRecs(rec, softBlock.GetBound())) return 2;
+            if (CheckCollisionRecs(rec, softBlock.GetBound())) 
+                return 2;
         }
     }
+    if (PUBP == false) {
+        for (auto it = bombs.begin(); it != bombs.end(); ) {
+            if (CheckCollisionRecs(rec, (*it)->GetBounds())) {
+                if (onBomb == true) {
+                    return 4;
+                    printf("return 4\n");
+                }
+                else if (onBomb == false) {
+                    printf("return 3\n");
+                    return 3;
+                }
+            }
+            it++;
+        }
+    }
+    
     
     return 0;
 }

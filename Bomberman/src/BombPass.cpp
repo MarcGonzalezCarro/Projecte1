@@ -6,5 +6,5 @@ BombPass::BombPass(float x, float y) : PowerUp(x, y) {
 }
 
 void BombPass::Effect(){
-    MAX_BOMBS++;
+    PUBP = true;
 }

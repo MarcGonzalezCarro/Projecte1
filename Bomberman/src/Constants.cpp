@@ -17,4 +17,5 @@ int PLAYER_SPEED = 4;
 bool PUWP = false;
 bool PUFP = false;
 bool PURC = false;
+bool PUBP = false;
 bool INVINCIBLE = false;

@@ -9,7 +9,7 @@ public:
     Ovape(Vector2 startPosition);
     ~Ovape() override;
 
-
+    bool CheckWallCollision(Vector2 nextPosition, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks) override;
 private:
     Vector2 direction; // Dirección de movimiento
     float dropBombProbability; // Probabilidad de dejar una bomba
