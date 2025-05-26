@@ -90,6 +90,8 @@ int powerUpSelected = 0;
 bool explodeB = false;
 int invincibleTimer = 0;
 
+bool wonGame = false;
+
 Camera2D camera1 = { 0 };
 Camera2D camera2 = { 0 };
 
@@ -106,13 +108,14 @@ std::unique_ptr<EnergyShield> energyShield;
 float bossAttackCooldown = 5.0f;
 float zoneMarkCooldown = 2.0f;
 bool attack1state = false;
-float propagationTime;
+float propagationTime = 0.0f;
 float expansionSpeed = 2.0f;
 int currentRadius = 3;
 int radius = 3;
 float maxRadius = 6;
-int centerX, centerY;
-bool propagationState;
+int centerX = 0;
+int centerY = 0;
+bool propagationState = false;
 int currentCoils = 3;
 int currentPhase = 1;
 std::vector<Rectangle> zoneMark;
@@ -122,16 +125,21 @@ std::vector<Vector2> emptyPositions;
 Music menuSong;
 Music gameSong;
 Music specialGameSong;
+Music gameOver;
+Music win;
 
 int enemyCounter = 0;
+int hits = 3;
+int bossTimer = 80;
 
 bool playerWalking = false;
 bool playerWalking2 = false;
 bool isCoop = false;
+bool onBomb2 = false;
 
 double startTime = GetTime();
 double targetTime = 200.0;
-double elapsedTime;
+double elapsedTime = 0;
 double remainingTime = 200.0;
 
 Color semiTransparentRed = Color{ 255, 0, 0, 80};
@@ -174,6 +182,8 @@ Game::Game() : player(INITIAL_PLAYER_X, INITIAL_PLAYER_Y), player2(INITIAL_PLAYE
     endScreen = resourceManager.GetTexture(21);
     menuSong = resourceManager.GetMusic(0);
     gameSong = resourceManager.GetMusic(1);
+    win = resourceManager.GetMusic(5);
+    gameOver = resourceManager.GetMusic(6);
     specialGameSong = resourceManager.GetMusic(2);
     customizer.LoadFromFile("resources/customization.txt");
     customizerPU.LoadFromFile("resources/customizationPU.txt");
@@ -229,11 +239,13 @@ void Game::Run() {
                 case 0:
                     printf("Aqui seria el start");
                     startScreen = false;
+                    currentStage = 1;
                     ResetStage();
                     break;
                 case 1:
                     printf("Aqui seria el continue");
                     startScreen = false;
+                    currentStage = 1;
                     isCoop = true;
                     ResetStage();
                     break;
@@ -314,6 +326,22 @@ void Game::Run() {
             }
         }
         else if (isDead) {
+            if (wonGame) {
+                if (!IsMusicStreamPlaying(win)) {
+                    PlayMusicStream(win);
+                }
+                else {
+                    UpdateMusicStream(win);
+                }
+            }
+            else {
+                if (!IsMusicStreamPlaying(gameOver)) {
+                    PlayMusicStream(gameOver);
+                }
+                else {
+                    UpdateMusicStream(gameOver);
+                }
+            }
             if (IsKeyPressed(KEY_BACKSPACE) && nameLength > 0)
             {
                 nameLength--;
@@ -337,7 +365,41 @@ void Game::Run() {
                 else {
                     SaveGame::SaveEntriesToFile(entries);
                 }
-                
+                if (!IsMusicStreamPlaying(win)) {
+                    StopMusicStream(win);
+                }
+                if (!IsMusicStreamPlaying(gameOver)) {
+                    StopMusicStream(gameOver);
+                }
+
+                BOMB_RANGE = 1;
+                MAX_BOMBS = 1;
+                PLAYER_SPEED = 4;
+                PUWP = false;
+                PUFP = false;
+                PURC = false;
+                PUBP = false;
+                INVINCIBLE = false;
+                enemiesKilled = 0;
+                ballomKills = 0;
+                onilKills = 0;
+                dahlKills = 0;
+                minvoKills = 0;
+                doriaKills = 0;
+                ovapeKills = 0;
+                passKills = 0;
+                pontanKills = 0;
+                bombsPlanted = 0;
+                softBlocksDestroyed = 0;
+                powerUpsPicked = 0;
+                fireUpCounter = 0;
+                bombUpCounter = 0;
+                speedUpCounter = 0;
+                flamePassCounter = 0;
+                bombPassCounter = 0;
+                InvincibleCounter = 0;
+                remoteControlCounter = 0;
+                wallPassCounter = 0;
                 startScreen = true;
                 isDead = false;
             }
@@ -394,7 +456,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            temp = CheckPlayerCollisions(player.GetBounds());
+            temp = CheckPlayerCollisions(player.GetBounds(), 0);
             if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetX(prevX);
             }
@@ -411,7 +473,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                 PlaySound(resourceManager.GetSound(0));
             }
-            temp = CheckPlayerCollisions(player.GetBounds());
+            temp = CheckPlayerCollisions(player.GetBounds(), 0);
             if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetX(prevX);
             }
@@ -429,7 +491,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            temp = CheckPlayerCollisions(player.GetBounds());
+            temp = CheckPlayerCollisions(player.GetBounds(), 0);
             if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetY(prevY);
             }
@@ -447,7 +509,7 @@ void Game::Update() {
             if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                 PlaySound(resourceManager.GetSound(1));
             }
-            temp = CheckPlayerCollisions(player.GetBounds());
+            temp = CheckPlayerCollisions(player.GetBounds(), 0);
             if (temp == 1 || temp == 2 || temp == 3) {
                 player.SetY(prevY);
             }
@@ -519,6 +581,7 @@ void Game::Update() {
             }
         }
         if (!player2.IsDead()) {
+            int temp = 0;
             if (IsKeyDown(KEY_D)) {
                 Vector2 v = { 1,0 };
                 player2.Move(PLAYER_SPEED, 0, v);
@@ -526,8 +589,13 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                     PlaySound(resourceManager.GetSound(0));
                 }
-                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
+                temp = CheckPlayerCollisions(player2.GetBounds(), 1);
+                if (temp == 1 || temp == 2 || temp == 3) {
                     player2.SetX(prevX2);
+                }
+                else if (onBomb2 == true && temp == 0) {
+                    onBomb2 = false;
+                    printf("on bomb false\n");
                 }
                 
 
@@ -538,10 +606,14 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(0))) {
                     PlaySound(resourceManager.GetSound(0));
                 }
-                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
+                temp = CheckPlayerCollisions(player2.GetBounds(), 1);
+                if (temp == 1 || temp == 2 || temp == 3) {
                     player2.SetX(prevX2);
                 }
-                
+                else if (onBomb2 == true && temp == 0) {
+                    onBomb2 = false;
+                    printf("on bomb false\n");
+                }
 
             }
             if (IsKeyDown(KEY_S)) {
@@ -550,8 +622,13 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                     PlaySound(resourceManager.GetSound(1));
                 }
-                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
+                temp = CheckPlayerCollisions(player2.GetBounds(), 1);
+                if (temp == 1 || temp == 2 || temp == 3) {
                     player2.SetY(prevY2);
+                }
+                else if (onBomb2 == true && temp == 0) {
+                    onBomb2 = false;
+                    printf("on bomb false\n");
                 }
                 
 
@@ -562,8 +639,13 @@ void Game::Update() {
                 if (!IsSoundPlaying(resourceManager.GetSound(1))) {
                     PlaySound(resourceManager.GetSound(1));
                 }
-                if (CheckPlayerCollisions(player2.GetBounds()) != 0) {
+                temp = CheckPlayerCollisions(player2.GetBounds(), 1);
+                if (temp == 1 || temp == 2 || temp == 3) {
                     player2.SetY(prevY2);
+                }
+                else if (onBomb == true && temp == 0) {
+                    onBomb = false;
+                    printf("on bomb false\n");
                 }
                 
 
@@ -624,13 +706,15 @@ void Game::Update() {
         }
     }
     if (IsKeyPressed(KEY_Y)) {
+        wonGame = true;
+        GameOver();
+    }
+    if (IsKeyPressed(KEY_U)) {
+        wonGame = false;
         GameOver();
     }
     if (IsKeyDown(KEY_P)) {
         playerScore += 10000;
-    }
-    if (IsKeyDown(KEY_B)) {
-        PrepareBossAttack1();
     }
     //Mostrar Hitboxes
     if (IsKeyPressed(KEY_F1)) {
@@ -761,7 +845,7 @@ void Game::Update() {
             }
         }
     }
-    if (currentStage != 5) {
+    if (currentStage != 10) {
         if (CheckBlastDamage({ exits.back().GetBound().x, exits.back().GetBound().y })) {
             if (extraEnemies == false) {
                 AddEnemy({ exits.back().GetBound().x, exits.back().GetBound().y }, 1);
@@ -882,12 +966,14 @@ void Game::Update() {
         }
         ++it; 
     }
-    if (currentStage == 5) {
+    if (currentStage == 10) {
+
+        
         currentBoss->Update(GetFrameTime(), walls, softBlocks);
 
         bossAttackCooldown -= GetFrameTime();
         if (bossAttackCooldown <= 0) {
-
+            PlaySound(resourceManager.GetSound(6));
             int attackType = 0;
             if (attack1state == false) {
                 if (currentPhase == 2) {
@@ -916,6 +1002,22 @@ void Game::Update() {
                 currentBoss->isAttacking = true;
                 bossAttackCooldown = 3.0f;
             }
+        }
+        if (currentPhase == 2) {
+            if (CheckBossBlastDamage({ 1500, 500 })) {
+                if (bossTimer <= 0) {
+                    printf("Ha DADO");
+                    hits--; // Llama a Die()
+                    bossTimer = 80;
+                }
+            }
+            bossTimer = bossTimer - GetFrameTime();
+        }
+        //printf("%d", bossTimer);
+        if (hits <= 0) {
+            wonGame = true;
+            isDead = true;
+            GameOver();
         }
         if (attack1state == true) {
             BossCoroutine(GetFrameTime());
@@ -1046,8 +1148,12 @@ void Game::Draw() {
                 DrawTexturePro(score->textura, source, dest, v2, 0, WHITE);
             }
             
-            if (currentStage == 5) {
+            if (currentStage == 10) {
                 currentBoss->Draw();
+                if (debbugerMode1) {
+                    DrawRectangleLines(1500, 500, CELL_SIZE - 10, CELL_SIZE - 10, RED);
+                }
+
                 for each (Rectangle var in zoneMark)
                 {
                     DrawRectangle(var.x,var.y,var.width,var.height,semiTransparentRed);
@@ -1083,7 +1189,7 @@ void Game::Draw() {
         BeginScissorMode(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado izquierdo
         BeginMode2D(camera1);
         ClearBackground(GRAY);
-        DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
+        DrawRectangle(0, 215, 3000, 1200, DARKGREEN);
         for (auto& wall : walls) wall.Draw();
         for (auto& exit : exits) exit.Draw();
         for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -1091,11 +1197,66 @@ void Game::Draw() {
         for (auto& bomb : bombs) bomb->Draw();
         for (auto& blast : blasts) blast.Draw();
         for (const auto& enemy : enemies) enemy->Draw();
-        for (const auto& coil : coils) coil->Draw();
         if (player.IsActive()) player.Draw();
         if (player2.IsActive()) player2.Draw();
-        if (currentStage == 5) {
+        if (debbugerMode1) {
+            for (auto& wall : walls) wall.DrawHitbox();
+            if (player.IsActive()) player.DrawHitbox();
+            if (player2.IsActive()) player2.DrawHitbox();
+            for (auto& exit : exits) exit.DrawHitbox();
+            for (auto& softBlock : softBlocks) softBlock.DrawHitbox();
+            for (const auto& powerup : powerups) powerup->DrawHitbox();
+            for (auto& bomb : bombs) bomb->DrawHitbox();
+            for (auto& blast : blasts) blast.DrawHitbox();
+            for (const auto& enemy : enemies) enemy->DrawHitbox();
+        }
+        for (const auto& score : scores)
+        {
+            Vector2 v = { score->pos.x, score->pos.y };
+            Rectangle source = { 0, 0, 16, 5 };
+            Rectangle dest = { (score->pos.x), (score->pos.y), 16 * 6.3f , 5 * 6.3f };
+            Vector2 v2 = { 1, 1 };
+            //score->id = 4;
+            switch (score->id)
+            {
+            case 1:
+                source.y = 5;
+                break;
+            case 2:
+                source.y = 10;
+                break;
+            case 3:
+                source.y = 15;
+                break;
+            case 4:
+                source.y = 0;
+                source.x = 16;
+                break;
+            case 5:
+                source.y = 5;
+                source.x = 16;
+                break;
+            case 6:
+                source.y = 10;
+                source.x = 16;
+                break;
+            case 7:
+                source.y = 15;
+                source.x = 16;
+                break;
+            default:
+                break;
+            }
+
+            DrawTexturePro(score->textura, source, dest, v2, 0, WHITE);
+        }
+
+        if (currentStage == 10) {
             currentBoss->Draw();
+            if (debbugerMode1) {
+                DrawRectangleLines(1500, 500, CELL_SIZE - 10, CELL_SIZE - 10, RED);
+            }
+
             for each (Rectangle var in zoneMark)
             {
                 DrawRectangle(var.x, var.y, var.width, var.height, semiTransparentRed);
@@ -1113,7 +1274,7 @@ void Game::Draw() {
             BeginScissorMode(SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);  // Delimita lado derecho
             BeginMode2D(camera2);
             ClearBackground(GRAY);
-            DrawRectangle(0, 215, 4000, 1200, DARKGREEN);
+            DrawRectangle(0, 215, 3000, 1200, DARKGREEN);
             for (auto& wall : walls) wall.Draw();
             for (auto& exit : exits) exit.Draw();
             for (auto& softBlock : softBlocks) softBlock.Draw();
@@ -1123,8 +1284,64 @@ void Game::Draw() {
             for (const auto& enemy : enemies) enemy->Draw();
             if (player.IsActive()) player.Draw();
             if (player2.IsActive()) player2.Draw();
-            if (currentStage == 5) {
+            if (debbugerMode1) {
+                for (auto& wall : walls) wall.DrawHitbox();
+                if (player.IsActive()) player.DrawHitbox();
+                if (player2.IsActive()) player2.DrawHitbox();
+                for (auto& exit : exits) exit.DrawHitbox();
+                for (auto& softBlock : softBlocks) softBlock.DrawHitbox();
+                for (const auto& powerup : powerups) powerup->DrawHitbox();
+                for (auto& bomb : bombs) bomb->DrawHitbox();
+                for (auto& blast : blasts) blast.DrawHitbox();
+                for (const auto& enemy : enemies) enemy->DrawHitbox();
+            }
+            for (const auto& score : scores)
+            {
+                Vector2 v = { score->pos.x, score->pos.y };
+                Rectangle source = { 0, 0, 16, 5 };
+                Rectangle dest = { (score->pos.x), (score->pos.y), 16 * 6.3f , 5 * 6.3f };
+                Vector2 v2 = { 1, 1 };
+                //score->id = 4;
+                switch (score->id)
+                {
+                case 1:
+                    source.y = 5;
+                    break;
+                case 2:
+                    source.y = 10;
+                    break;
+                case 3:
+                    source.y = 15;
+                    break;
+                case 4:
+                    source.y = 0;
+                    source.x = 16;
+                    break;
+                case 5:
+                    source.y = 5;
+                    source.x = 16;
+                    break;
+                case 6:
+                    source.y = 10;
+                    source.x = 16;
+                    break;
+                case 7:
+                    source.y = 15;
+                    source.x = 16;
+                    break;
+                default:
+                    break;
+                }
+
+                DrawTexturePro(score->textura, source, dest, v2, 0, WHITE);
+            }
+
+            if (currentStage == 10) {
                 currentBoss->Draw();
+                if (debbugerMode1) {
+                    DrawRectangleLines(1500, 500, CELL_SIZE - 10, CELL_SIZE - 10, RED);
+                }
+
                 for each (Rectangle var in zoneMark)
                 {
                     DrawRectangle(var.x, var.y, var.width, var.height, semiTransparentRed);
@@ -1143,10 +1360,14 @@ void Game::Draw() {
 
         if (debbugerMode2) {
             DrawRectangle(0,0,1920, 1080, { 128, 128, 128, 160 });
-            DrawText(TextFormat("Posicion Jugador: %.2f, %.2f", player.GetBounds().x, player.GetBounds().y), 600, 300, 40, WHITE);
+            
             DrawText(TextFormat("Velocidad Jugador: %d", PLAYER_SPEED), 600, 340, 40, WHITE);
             if (isCoop) {
-                DrawText(TextFormat("Posicion Jugador 2: %.2f, %.2f", player2.GetBounds().x, player2.GetBounds().y), 600, 340, 40, WHITE);
+                DrawText(TextFormat("Posicion Jugador: %.2f, %.2f", player.GetBounds().x, player.GetBounds().y), 600, 200, 40, WHITE);
+                DrawText(TextFormat("Posicion Jugador 2: %.2f, %.2f", player2.GetBounds().x, player2.GetBounds().y), 600, 300, 40, WHITE);
+            }
+            else {
+                DrawText(TextFormat("Posicion Jugador: %.2f, %.2f", player.GetBounds().x, player.GetBounds().y), 600, 300, 40, WHITE);
             }
             DrawText(TextFormat("Enemigos Totales: %d", totalEnemiesThisStage), 600, 380, 40, WHITE);
             DrawText(TextFormat("Enemigos Restantes: %d", enemies.size()), 600, 420, 40, WHITE);
@@ -1242,23 +1463,14 @@ void Game::Draw() {
             }
         }
     }
-    /*else if (isDead) {
-        ClearBackground(BLACK);
-        DrawText("GAME OVER", (float)SCREEN_WIDTH / 2 - 200, 100, 40, WHITE);
-
-        // Dibujar la línea de guiones bajos y reemplazarlos por las letras
-        for (int i = 0; i < 5; i++) // Mostrar un máximo de 5 caracteres
-        {
-            if (i < nameLength)
-                DrawText(TextFormat("%c", playerName[i]), (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE);
-            else
-                DrawText("_", (float)SCREEN_WIDTH / 2 - 200 + i * 30, 250, 30, WHITE); // Mostrar guiones bajos
-        }
-    }*/
     else if (isDead)
     {
         ClearBackground(BLACK);
-        DrawTextureEx(endScreen, {0, 0}, 0, 1, WHITE);
+        
+        if (wonGame) {
+            DrawTextureEx(endScreen, { 0, 0 }, 0, 1, WHITE);
+        }
+        
         DrawText("INSERT YOUR NAME:", (float)SCREEN_WIDTH / 2 - 450, 850, 40, WHITE);
         for (int i = 0; i < 5; i++) // Mostrar un máximo de 5 caracteres
         {
@@ -1296,7 +1508,7 @@ void Game::AddWalls() {
     walls.clear();
     softBlocks.clear();
 
-    if (currentStage != 5) {
+    if (currentStage != 10) {
         for (int i = 0; i < 31; i++) {
             for (int j = 0; j < 13; j++) {
                 if (i != 0 && j != 0 && i != 31 - 1 && j != 13 - 1) {
@@ -1444,6 +1656,7 @@ void Game::AddBomb(float x, float y) {
         }
     }
     onBomb = true;
+    onBomb2 = true;
     printf("on bomb true\n");
     
 }
@@ -1677,7 +1890,7 @@ int Game::CheckCollisions(Rectangle rec) {
     return 0;
 }
 
-int Game::CheckPlayerCollisions(Rectangle rec) {
+int Game::CheckPlayerCollisions(Rectangle rec, int i) {
     for (const auto& wall : walls) {
         if (CheckCollisionRecs(rec, wall.GetBound())) 
             return 1;
@@ -1689,32 +1902,52 @@ int Game::CheckPlayerCollisions(Rectangle rec) {
                 return 2;
         }
     }
-    if (PUBP == false) {
-        for (auto it = bombs.begin(); it != bombs.end(); ) {
-            if (CheckCollisionRecs(rec, (*it)->GetBounds())) {
-                if (onBomb == true) {
-                    return 4;
-                    printf("return 4\n");
+    if (i == 0) {
+        if (PUBP == false) {
+            for (auto it = bombs.begin(); it != bombs.end(); ) {
+                if (CheckCollisionRecs(rec, (*it)->GetBounds())) {
+                    if (onBomb == true) {
+                        return 4;
+                        printf("return 4\n");
+                    }
+                    else if (onBomb == false) {
+                        printf("return 3\n");
+                        return 3;
+                    }
                 }
-                else if (onBomb == false) {
-                    printf("return 3\n");
-                    return 3;
-                }
+                it++;
             }
-            it++;
         }
     }
+    else {
+        if (PUBP == false) {
+            for (auto it = bombs.begin(); it != bombs.end(); ) {
+                if (CheckCollisionRecs(rec, (*it)->GetBounds())) {
+                    if (onBomb2 == true) {
+                        return 4;
+                        printf("return 4\n");
+                    }
+                    else if (onBomb2 == false) {
+                        printf("return 3\n");
+                        return 3;
+                    }
+                }
+                it++;
+            }
+        }
+    }
+    
     
     
     return 0;
 }
 
 void Game::CheckExitCollision() {
-    if (currentStage != 5) {
+    if (currentStage != 10) {
         Rectangle p = { player.GetBounds().x, player.GetBounds().y, player.GetBounds().width, player.GetBounds().height };
         Rectangle e = { exits.at(0).GetBound().x, exits.at(0).GetBound().y, CELL_SIZE - 20, CELL_SIZE - 20 };
         if (CheckCollisionRecs(p, e)) {
-            if ((currentStage + 1) % 5 == 0) {
+            if (currentStage == 10) {
                 BossLevel();
             }
             else {
@@ -1726,7 +1959,7 @@ void Game::CheckExitCollision() {
 }
 
 bool Game::CheckEnemyCollision(float x, float y) {
-    if (currentStage != 5) {
+    if (currentStage != 10) {
 
         Rectangle p = { x, y, player.GetBounds().width, player.GetBounds().height };
 
@@ -1797,7 +2030,19 @@ bool Game::CheckBlastDamage(Vector2 pos) {
     }
     return false;
 }
-
+bool Game::CheckBossBlastDamage(Vector2 pos) {
+    Rectangle rec = { pos.x, pos.y, CELL_SIZE, CELL_SIZE };
+    for (const auto& blast : blasts) {
+        if (!blast.fromBoss) {
+            Rectangle r = { blast.position.x, blast.position.y, CELL_SIZE - 20, CELL_SIZE - 20 };
+            if (CheckCollisionRecs(rec, r)) {
+                printf("Te ha dao en: %f,%f y player: %f, %f\n", blast.position.x, blast.position.y, rec.x, rec.y);
+                return true;
+            }
+        }
+    }
+    return false;
+}
 bool Game::CheckPlayerBlastDamage(Vector2 pos) {
     if (!PUFP)
     {

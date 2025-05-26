@@ -15,6 +15,8 @@ MechaBlastX::MechaBlastX(Vector2 startPosition)
     animFramesCounter = 0;
     direction = { 1, 0 };
     framesSpeed = 12;
+    vidas = 3;
+    isDead = false;
 }
 
 MechaBlastX::~MechaBlastX()
@@ -74,5 +76,4 @@ void MechaBlastX::Draw() const
     DrawTexturePro(texture, source, dest, v2, 0, WHITE);
 
 }
-
 

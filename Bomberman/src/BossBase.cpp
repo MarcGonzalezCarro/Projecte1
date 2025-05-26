@@ -99,3 +99,9 @@ bool Boss::IsDead()
     return isDead;
 }
 
+void Boss::SetIsDead(bool status) {
+    isDead = status;
+}
+
+
+

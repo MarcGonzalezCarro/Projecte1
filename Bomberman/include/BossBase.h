@@ -10,6 +10,7 @@ class Boss {
 public:
     Boss(Vector2 startPosition); // Constructor
     int id;
+    int vidas;
     virtual ~Boss(); // Destructor virtual para herencia
     virtual void Phase1Attack(Vector2 pos);
     virtual void Update(float deltaTime, const std::vector<Wall>& walls, const std::vector<SoftBlock>& softBlocks); // Actualización del enemigo (movimientos, lógica)
@@ -28,6 +29,7 @@ public:
 
     bool IsActive();
     bool IsDead();
+    void SetIsDead(bool status);
     bool isAttacking;
 
     void Die();

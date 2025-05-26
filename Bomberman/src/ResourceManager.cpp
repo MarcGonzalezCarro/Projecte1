@@ -63,6 +63,8 @@ void ResourceManager::LoadMusic() {
     musics.push_back(LoadMusicStream("resources/Power-Up_Get.mp3")); //2
     musics.push_back(LoadMusicStream("resources/Stage.mp3")); //3
     musics.push_back(LoadMusicStream("resources/Dead.mp3")); //4
+    musics.push_back(LoadMusicStream("resources/Win.mp3")); //5
+    musics.push_back(LoadMusicStream("resources/GameOver.mp3")); //6
 }
 
 void ResourceManager::LoadSounds() {
